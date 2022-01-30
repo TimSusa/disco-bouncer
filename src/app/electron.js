@@ -88,7 +88,7 @@ async function createWindow() {
       sandbox: true
     }
     ,
-    title: 'Get That Track Out!',
+    title: 'Disco Bouncer',
     vibrancy: 'dark',
     titlebarAppearsTransparent: true
   })
@@ -114,46 +114,6 @@ async function createWindow() {
   ipcMain.on('remove-file', (event, pathToFile) => trash(pathToFile.path))
   ipcMain.on('set-to-actual-win-coords', onSetActualWinCoords)
   ipcMain.on('exit-app', () => app.exit(0))
-
-  let forceQuit = false
-  ipcMain.on('open-unsaved-changes-dialog', (e) => {
-    if (!forceQuit) {
-      dialog
-        .showMessageBox(win, {
-          type: 'warning',
-          buttons: ['Cancel', 'Leave'],
-          cancelId: 1,
-          title: 'Confirm',
-          message: 'You have unsaved work!'
-        })
-        .then(({ response: clickedButtonId }) => {
-          // if (clickedButtonId === 0) {
-          //   e.preventDefault()
-          //   forceQuit = true
-
-          //   log.info('Saving ', arg)
-          //   win.close()
-
-          //   onSaveFileDialog(e, arg, true)
-
-          // } else
-
-          if (clickedButtonId === 0) {
-            e.preventDefault()
-            log.info('Cancel')
-            forceQuit = true
-            win.close()
-          } else if (clickedButtonId === 1) {
-            //forceQuit = true
-            log.info('Leave exit')
-            win.close()
-            app.exit(0)
-          }
-        })
-    } else {
-      forceQuit = false
-    }
-  })
 
   const url = isDev
     ? 'http://localhost:3000/'

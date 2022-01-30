@@ -86,13 +86,13 @@ export const content = {
     )
     state.tracks[tracksIdx].data[clipIdx].volume = volume
   },
-  toggleIsPlaying(state, { payload: { tracksId, clipId, isPlaying } }) {
-    const tracksIdx = state.tracks.findIndex((item) => item.id === tracksId)
-    const clipIdx = state.tracks[tracksIdx].data.findIndex(
-      (item) => item.id === clipId
-    )
-    state.tracks[tracksIdx].data[clipIdx].isPlaying = !isPlaying
-  },
+  // toggleIsPlaying(state, { payload: { tracksId, clipId, isPlaying } }) {
+  //   const tracksIdx = state.tracks.findIndex((item) => item.id === tracksId)
+  //   const clipIdx = state.tracks[tracksIdx].data.findIndex(
+  //     (item) => item.id === clipId
+  //   )
+  //   state.tracks[tracksIdx].data[clipIdx].isPlaying = !isPlaying
+  // },
   toggleIsPlayingList(state, { payload: { clips } }) {
     clips.forEach((clip) => {
       const { tracksId, clipId, isPlaying } = clip

@@ -35,11 +35,11 @@ export const viewSettings = {
   },
   registerClip(state, { payload: { clip } }) {
     if (state.registeredClips.every((item) => item.clipId !== clip.clipId)) {
-      state.registeredClips = [...state.registeredClips, clip]
+      state.registeredClips = [ clip]
     }
   },
   registerClips(state, { payload: { clips } }) {
-    state.registeredClips = [...state.registeredClips, ...clips]
+    state.registeredClips = [ ...clips]
   },
   clearRegisteredClips(state) {
     state.registeredClips = []

@@ -92,7 +92,7 @@ function renderRow(props) {
   const { index, style, data } = props
   const { id, data: dataTmp} = data[index]
   return (
-    <ListItem style={style} key={index} component="div" disablePadding>
+    <ListItem style={style} key={index} component="div">
       <Clip id={id} data={dataTmp[0]}></Clip>
     </ListItem>
   )

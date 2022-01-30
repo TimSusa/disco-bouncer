@@ -22,7 +22,8 @@ export function App() {
         'Dear User, \n\nSafari and iOS Browsers are not supported. Please, consider using Android or a macOSX, win or raspberryPI hardware.'
       )
     }
-    dispatch(clock())
+    // hackdisable
+    dispatch(clock)
   }, [])
   /*eslint-enable*/
   return (

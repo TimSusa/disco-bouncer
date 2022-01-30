@@ -27,23 +27,8 @@ function MenuAppBarCmp(props) {
           </IconButton>
 
           <Typography variant='h6' className={classes.typoColorStyle}>
-            Choon Commander
+            Disco Bouncer
           </Typography>
-
-          {process.env.REACT_APP_IS_WEB_MODE === 'true' && (
-            <React.Fragment>
-              <Typography className={classes.typoColorStyle}>
-                ++ WEB-DEMO ++
-              </Typography>
-              <a
-                className={classes.typoColorStyle}
-                href={'https://github.com/TimSusa/cliptor/releases'}
-              >
-                Download here!
-              </a>
-            </React.Fragment>
-          )}
-
           <div
             style={{
               display: 'flex',
@@ -51,7 +36,6 @@ function MenuAppBarCmp(props) {
               justifyContent: 'space-around'
             }}
           >
-
           </div>
         </Toolbar>
       </AppBar>

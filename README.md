@@ -2,48 +2,39 @@
   <img width="250" src="./docs/cliptor-logo.svg">
 </p>
 
-# Cliptor
+# Disco Bouncer
 
-disco-bounceris a browser based application, which makes heavily use of the latest WebAudioAPI features. The basic idea is, to have a light-weight sampler application containing a clip-matrix in the manner of ableton live.
-This app is supposed to start samples via buttons synchronized to a given BPM. For example you could add, start and stop a sample "hooray" and a sample "applause" or even start whole tracks. However, start the app, add your clips, drag and drop your files to the clips and you can start mixing and looping.
+## Goal
+In order to save time when exploring big amounts of new music data, you want to have a handy helper util.
 
-Note: You better install the app on your OS to have all features available.
+# Problem
+Existing tools lack in providing a real fast workflow. For example you were receiving 3GB of new promos, what to do if you have to play in one hour?
 
-## Features
+# Approach
+Make your music collection great again! Use the Disco Bouncer Util!
 
-- Easy extending your clip matrix: Add tracks or add clips to tracks
-- Drag and Drop your sample file easily to your clips for every track
-- disco-bouncerreads all common sound files like mp3, wav, ogg or flac
-- Start, Stop and Pause your clips synchronized to the given BPM
-- Latency-Compensation included, so every sample is synchronized and scheduled to the given BPM
-- Have different Audio-Driver Output for every clip available
-- Change volume for each clip
-- Seek forward or backward during playback ( yes you can do kind of DJing with Cliptor)
-- Start scenes, similar to ableton live
-- Load from or save your current settings to a preset file
-
+# Features
+- Blazingly fast!
+- Work on a list of files you check if ok or putting out of your collection
+- Extract out any music data out of big recursive directory structures
+- Quickly tune into every location of the track by just clicking into the waveform
+- Using Performance optimizations for just rendering out the needed information (Virtualizing Lists)
+- Reveal the music file in the file finder
+- If you decide to put out a track, it is just in the trash, so it is reversible data
+- Save huge amount of time fiddling arround to get the right track to the right genre
 ## Operation System Support
 
-- Desktop Installer: Win, MacOSX and RaspberryPi4 (https://github.com/TimSusa/cliptor/releases)
-- Web-Demo: Win, MacOSX, RaspberryPi4 and Android Mobile Devices (https://cliptor.timsusa.vercel.app/)
-
-NOTE: Due to a lack of support from Apple, Safari and every Browser on iOS Devices is NOT supported.
-
-Furthermore, consider downloading and installing the actual release on your machine, because features like drag and drop of audiofiles and saving to a preset are supported here. The Webdemo is just only supposed to be a light show case.
+It is an electron project. 
 
 ## Download and Install
 
-Go to https://github.com/TimSusa/cliptor/releases and find the latest or beta release. There is a caret with "assets". Please click the caret to have the download links available.
+Go to releases and find the latest or beta release. There is a caret with "assets". Please click the caret to have the download links available.
 
 - Mac OSX: Please, download the \*.dmg File (can be seen on "assets" at the bottom here) and double click
 - Windows 7 and above: Please, download the \*.exe File (can be seen on "assets" at the bottom here) and double click
 - Raspberry-pi 4 and above: Please, download the AppImage File, chmod +x the file to make it executable and then start it
 
-## Live-Web-Demo
 
-Note: This is just for demo purposes. Better download and install (https://github.com/TimSusa/cliptor/releases ) the electron app to enjoy all the features.
-
-https://cliptor.timsusa.vercel.app/
 
 <p align="center">
   <img width="100%" src="./docs/screenshot.png">
@@ -92,11 +83,6 @@ yarn dev
 ```
 yarn build-ci
 ```
-
-# Contributing
-
-Please consider to create a PR with or without any issue.
-I will get back to you, asap.
 
 # Versioning
 
