@@ -1,0 +1,70 @@
+{
+  "short_name": "Cliptor",
+  "name": "Cliptor",
+  "icons": [
+    {
+      "sizes": "20x20",
+      "idiom": "ipad",
+      "src": "ipad-20x20.png",
+      "scale": "1x"
+    },
+    {
+      "sizes": "20x20",
+      "idiom": "ipad",
+      "src": "ipad-20x20@2x.png",
+      "scale": "2x"
+    },
+    {
+      "sizes": "29x29",
+      "idiom": "ipad",
+      "src": "ipad-29x29.png",
+      "scale": "1x"
+    },
+    {
+      "sizes": "29x29",
+      "idiom": "ipad",
+      "src": "ipad-29x29@2x.png",
+      "scale": "2x"
+    },
+    {
+      "sizes": "40x40",
+      "idiom": "ipad",
+      "src": "ipad-40x40.png",
+      "scale": "1x"
+    },
+    {
+      "sizes": "40x40",
+      "idiom": "ipad",
+      "src": "ipad-40x40@2x.png",
+      "scale": "2x"
+    },
+    {
+      "sizes": "76x76",
+      "idiom": "ipad",
+      "src": "ipad-76x76.png",
+      "scale": "1x"
+    },
+    {
+      "sizes": "76x76",
+      "idiom": "ipad",
+      "src": "ipad-76x76@2x.png",
+      "scale": "2x"
+    },
+    {
+      "sizes": "83.5x83.5",
+      "idiom": "ipad",
+      "src": "ipad-83.5x83.5@2x.png",
+      "scale": "2x"
+    },
+    {
+      "sizes": "1024x1024",
+      "idiom": "ios-marketing",
+      "src": "ios-marketing-1024x1024.png",
+      "scale": "1x"
+    }
+  ],
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
