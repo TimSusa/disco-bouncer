@@ -23,7 +23,7 @@ export function App() {
       )
     }
     // hackdisable
-    dispatch(clock)
+    dispatch(clock())
   }, [])
   /*eslint-enable*/
   return (
