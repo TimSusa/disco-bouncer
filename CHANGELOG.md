@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.15 (2022-02-01)
+
+
+### Bug Fixes
+
+* play mode ([ada4039](https://github.com/TimSusa/disco-bouncer/commit/ada40391a91f4e6c957477eebdd55b44f7747280))
+
 ### [0.0.15](https://github.com/TimSusa/cliptor/compare/v0.0.14...v0.0.15) (2021-01-09)
 
 
