@@ -1,4 +1,6 @@
-import { actionsContent, actionsViewSettings } from '../'
+import { actionsContent, 
+  actionsViewSettings 
+} from '../'
 const { toggleIsPlayingList } = actionsContent
 const { clearRegisteredClips } = actionsViewSettings
 
@@ -14,19 +16,13 @@ export function clock() {
     timerWorker.onmessage = nextTick
     timerWorker.postMessage('init') // Start the worker.
     timerWorker.postMessage('start')
-    console.log(
-      'Clock initialized with BPM: ',
-      bpm,
-      ' and Clip Rate: ',
-      windowFrameInSteps
-    )
     function nextTick() {
       const {
         viewSettings: { registeredClips }
       } = getState()
 
       if (registeredClips.length > 0) {
-        dispatch(toggleIsPlayingList({ clips: registeredClips }))
+        dispatch(toggleIsPlayingList({ clips: [registeredClips[0]] }))
         dispatch(clearRegisteredClips())
       }
     }

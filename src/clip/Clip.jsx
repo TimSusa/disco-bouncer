@@ -17,7 +17,7 @@ import Slider from '@material-ui/core/Slider'
 import { actionsContent, actionsViewSettings } from '../global-state'
 import context from '../global-state/context'
 import { removeFile, openWith } from '../utils/ipc-renderer.js'
-import { playbackStates } from '../global-state/reducers/view-settings'
+//import { playbackStates } from '../global-state/reducers/view-settings'
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -33,7 +33,7 @@ export function Clip({ data, id: tmpTrackId }) {
   const classes = useStyles()
   const { audioContext } = useContext(context)
   const dispatch = useDispatch()
-  const { registerClip, setPlaybackState } = actionsViewSettings
+  const { registerClip } = actionsViewSettings
   const {
     changeClipSrc,
     changeClipVolume,
@@ -54,6 +54,7 @@ export function Clip({ data, id: tmpTrackId }) {
   const waveformRef = useRef(null)
   const wavesurfer = useRef(null)
   const nrOfCycles = useRef(0)
+  const playWasCalled = useRef(false)
   const [playing, setPlay] = useState(isPlaying)
 
   useEffect(() => {
@@ -61,12 +62,7 @@ export function Clip({ data, id: tmpTrackId }) {
     wavesurfer.current = WaveSurfer.create(options)
     wavesurfer.current.load(src)
     wavesurfer.current.on('seek', () => {
-      if (isPlaying) {
-        wavesurfer.current.stop()
-        wavesurfer.current.play()
-      } else {
-        wavesurfer.current.play()
-      }
+      dispatch(stopAll())
       handlePlayPause()
     })
     wavesurfer.current.on('finish', () => {
@@ -98,24 +94,19 @@ export function Clip({ data, id: tmpTrackId }) {
     //eslint-disable-next-line
   }, [audioDriverOutName])
 
-  // useEffect(() => {
-  //   //const duration = wavesurfer.current.getDuration()
-  //   if (isPlaying) {
-  //     wavesurfer.current.play(
-  //       // audioContext.currentTime +
-  //       //   audioContext.baseLatency -
-  //       //   nrOfCycles.current * duration
-  //     )
-  //     playWasCalled.current = true
-  //   } else if (playWasCalled.current) {
-  //     wavesurfer.current.stop(
-  //       // audioContext.currentTime +
-  //       //   audioContext.baseLatency -
-  //       //   nrOfCycles.current * duration
-  //     )
-  //   }
-  //   //eslint-disable-next-line
-  // }, [isPlaying])
+  useEffect(() => {
+    if (isPlaying) {
+      wavesurfer.current.playPause(
+        audioContext.baseLatency 
+      )
+      playWasCalled.current = true
+    } else if (playWasCalled.current) {
+      wavesurfer.current.playPause(
+        audioContext.baseLatency 
+      )
+    }
+    //eslint-disable-next-line
+  }, [isPlaying])
 
   return (
     <div
@@ -170,18 +161,6 @@ export function Clip({ data, id: tmpTrackId }) {
       >
         <IconButton
           onClick={() => {
-            if (isPlaying) {
-              audioContext.suspend()
-              dispatch(stopAll())
-              dispatch(
-                setPlaybackState({
-                  playbackState: playbackStates.STOP,
-                  currentTimeStamp: audioContext.currentTime
-                })
-              )
-            } else {
-              wavesurfer.current.play()
-            }
             handlePlayPause()
           }}
           aria-label='play'>
@@ -292,10 +271,8 @@ export function Clip({ data, id: tmpTrackId }) {
     return {
       container: ref,
       audioContext,
-      // audioScriptProcessor: isSafari()
-      //   ? audioContext.createScriptProcessor(1024, 1, 1)
-      //   : null,
-      //closeAudioContext: false,
+      audioScriptProcessor: null,
+      closeAudioContext: false,
       barWidth: 2,
       barRadius: 2,
       responsive: true,

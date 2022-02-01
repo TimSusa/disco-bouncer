@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useTheme } from '@material-ui/styles'
 import { makeStyles } from '@material-ui/styles'
-import { Matrix } from './matrix/Matrix'
+import { ClipList } from './clip-list/ClipList'
 import MenuAppBar from './menu-app-bar/MenuAppBar'
 import Drawer from '@material-ui/core/Drawer'
 import DrawerList from './drawer-list/DrawerList'
-
+//import { actionsContent } from './global-state'
 import { clock } from './global-state/thunks/clock'
 import { isSafari } from './utils/is-safari'
+import {content} from './utils/example_120bpm'
 
 export function App() {
   const dispatch = useDispatch()
+  // const { setContent } = actionsContent
   const theme = useTheme()
   const classes = makeStyles(styles.bind(this, theme))()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -24,6 +26,9 @@ export function App() {
     }
     // hackdisable
     dispatch(clock())
+    let me = content
+    //console.log('ASDf ', JSON.stringify(me))
+    //dispatch(setContent({ content: content.content.tracks, viewSettings: content.viewSettings}))
   }, [])
   /*eslint-enable*/
   return (
@@ -47,7 +52,7 @@ export function App() {
             onClose={() => setIsMobileOpen(!isMobileOpen)}
           />
         </Drawer>
-        <Matrix />
+        <ClipList />
       </div>
     </div>
   )

@@ -30,7 +30,7 @@ export const content = {
       data: [
         {
           id: `clip-${uuidv4()}`,
-          src: './beat.mp3',
+          src: './public/beat.mp3',
           blob: null,
           volume: 0.66,
           isLooping: true,
@@ -50,7 +50,7 @@ export const content = {
         ...state.tracks[idx].data,
         {
           id: `clip-${uuidv4()}`,
-          src: './bd.m4a',
+          src: './beat.mp3',
           blob: null,
           volume: 0.66,
           isLooping: true,
