@@ -37,7 +37,7 @@ Go to releases and find the latest or beta release. There is a caret with "asset
 
 
 <p align="center">
-  <img width="100%" src="./docs/screenshot.png">
+  <img width="100%" src="./docs/disco-bouncer.png">
 </p>
 
 # For Developers
