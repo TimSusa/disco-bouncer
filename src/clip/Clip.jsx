@@ -29,7 +29,8 @@ const useStyles = makeStyles(() => ({
     padding: 8
   }
 }))
-export function Clip({ data, id: tmpTrackId }) {
+export function Clip({ index }) {
+
   const classes = useStyles()
   const { audioContext } = useContext(context)
   const dispatch = useDispatch()
@@ -42,6 +43,9 @@ export function Clip({ data, id: tmpTrackId }) {
     stopAll
   } = actionsContent
   const { audioDriverOuts } = useSelector((state) => state.viewSettings)
+  const { tracks } = useSelector((state) => state.content)
+  const { id: tmpTrackId, data} = tracks[index]
+
   const {
     isPlaying,
     isLooping,
@@ -50,7 +54,7 @@ export function Clip({ data, id: tmpTrackId }) {
     audioDriverOutName,
     src,
     id
-  } = data
+  } = data[0]
   const waveformRef = useRef(null)
   const wavesurfer = useRef(null)
   const nrOfCycles = useRef(0)
@@ -67,19 +71,12 @@ export function Clip({ data, id: tmpTrackId }) {
     })
     wavesurfer.current.on('finish', () => {
       nrOfCycles.current++
-
-      //const tmp =
-      // audioContext.currentTime +
-      // audioContext.baseLatency -
-      // nrOfCycles.current * duration
       if (isLooping) {
         wavesurfer.current.play()
       } else {
         wavesurfer.current.stop()
       }
     })
-    // Removes events, elements and disconnects Web Audio nodes.
-    // when component unmount
     return () => wavesurfer.current.destroy()
     //eslint-disable-next-line
   }, [src])
@@ -104,8 +101,7 @@ export function Clip({ data, id: tmpTrackId }) {
       wavesurfer.current.playPause(
         audioContext.baseLatency 
       )
-    }
-    //eslint-disable-next-line
+    } 
   }, [isPlaying])
 
   return (
@@ -294,8 +290,5 @@ export function Clip({ data, id: tmpTrackId }) {
 }
 
 Clip.propTypes = {
-  blob: PropTypes.any,
-  id: PropTypes.any,
-  src: PropTypes.string,
-  data: PropTypes.any,
+  index: PropTypes.any,
 }

@@ -36,13 +36,11 @@ export function ClipList() {
 }
 
 function renderRow(props) {
-  const { index, style, data } = props
-  if (data.length <= 0) return (<div></div>)
+  const { index, style } = props
 
-  const { id, data: dataTmp} = data[index]
   return (
     <ListItem style={style} key={index} component="div">
-      <Clip id={id} data={dataTmp[0]}></Clip>
+      <Clip index={index}></Clip>
     </ListItem>
   )
 }
