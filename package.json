@@ -2,7 +2,7 @@
   "name": "disco-bouncer",
   "author": "timmsusa@googlemail.com",
   "description": "disco-bouncer was invented to have the same functionality available like ablton live matrix sequencer",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "main": "./src/app/electron.js",
   "homepage": "./",
   "private": false,
