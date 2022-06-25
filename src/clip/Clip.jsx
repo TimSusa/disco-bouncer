@@ -81,7 +81,7 @@ export function Clip({ index }) {
       setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
     })
     wavesurfer.current.on('ready', () => {
-      dispatch(stopAll())
+      //dispatch(stopAll())
       setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
     })
     wavesurfer.current.on('finish', () => {
