@@ -67,14 +67,22 @@ export function Clip({ index }) {
   const nrOfCycles = useRef(0)
   const playWasCalled = useRef(false)
   const [playing, setPlay] = useState(isPlaying)
+  const [duration, setDuration] = useState(0)
 
   useEffect(() => {
     const options = formWaveSurferOptions(waveformRef.current)
     wavesurfer.current = WaveSurfer.create(options)
     wavesurfer.current.load(src)
+    wavesurfer.current.setVolume(volume)
+
     wavesurfer.current.on('seek', () => {
       dispatch(stopAll())
       handlePlayPause()
+      setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
+    })
+    wavesurfer.current.on('ready', () => {
+      dispatch(stopAll())
+      setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
     })
     wavesurfer.current.on('finish', () => {
       nrOfCycles.current++
@@ -144,7 +152,7 @@ export function Clip({ index }) {
           flexDirection: 'row',
           justifyContent: 'space-between',
           borderRadius: 5,
-          height: '20%',
+          height: '%',
           padding: '8px 8px 0 8px',
           backgroundColor: getBackgroundColor()
         }}
@@ -156,6 +164,17 @@ export function Clip({ index }) {
           onClick={() => {
             // dispatch(removeClip({ tracksId: tmpTrackId, clipId: id }))
             dispatch(markForHitlist({ tracksId: tmpTrackId, clipId: id }))
+
+            setPlay(false)
+            dispatch(
+              registerClip({
+                clip: {
+                  tracksId: tmpTrackId,
+                  clipId: id,
+                  isPlaying: false
+                }
+              })
+            )
           }}
         >
           <CloseIcon style={{ width: 16 }}></CloseIcon>
@@ -248,6 +267,7 @@ export function Clip({ index }) {
         >
           <OpenWithIcon style={{ width: 16 }}></OpenWithIcon>
         </IconButton>
+        <div>{duration}</div>
       </div>
       <div
         style={{
