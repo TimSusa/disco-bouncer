@@ -16,7 +16,10 @@ import WaveSurfer from 'wavesurfer.js'
 import Slider from '@material-ui/core/Slider'
 import { actionsContent, actionsViewSettings } from '../global-state'
 import context from '../global-state/context'
-import { removeFile, openWith } from '../utils/ipc-renderer.js'
+import {
+  //removeFile,
+  openWith
+} from '../utils/ipc-renderer.js'
 //import { playbackStates } from '../global-state/reducers/view-settings'
 
 const useStyles = makeStyles(() => ({
@@ -24,13 +27,13 @@ const useStyles = makeStyles(() => ({
     display: 'flex',
     width: '100%',
     flexDirection: 'column',
-    border: 'solid 1px grey',
-    borderRadius: '5px',
-    padding: 8
+    border: 'solid 1px #00000035',
+    borderRadius: 5,
+    padding: 8,
+    height: 200
   }
 }))
 export function Clip({ index }) {
-
   const classes = useStyles()
   const { audioContext } = useContext(context)
   const dispatch = useDispatch()
@@ -39,12 +42,14 @@ export function Clip({ index }) {
     changeClipSrc,
     changeClipVolume,
     toggleIsLooping,
-    removeClip,
+    //removeClip,
+    markForRemoval,
+    markForHitlist,
     stopAll
   } = actionsContent
   const { audioDriverOuts } = useSelector((state) => state.viewSettings)
   const { tracks } = useSelector((state) => state.content)
-  const { id: tmpTrackId, data} = tracks[index]
+  const { id: tmpTrackId, data } = tracks[index]
 
   const {
     isPlaying,
@@ -53,7 +58,9 @@ export function Clip({ index }) {
     volume,
     audioDriverOutName,
     src,
-    id
+    id,
+    isMarkedForHitlist,
+    willBeRemoved
   } = data[0]
   const waveformRef = useRef(null)
   const wavesurfer = useRef(null)
@@ -93,17 +100,20 @@ export function Clip({ index }) {
 
   useEffect(() => {
     if (isPlaying) {
-      wavesurfer.current.playPause(
-        audioContext.baseLatency 
-      )
+      wavesurfer.current.playPause(audioContext.baseLatency)
       playWasCalled.current = true
     } else if (playWasCalled.current) {
-      wavesurfer.current.playPause(
-        audioContext.baseLatency 
-      )
-    } 
+      wavesurfer.current.playPause(audioContext.baseLatency)
+    }
+    //eslint-disable-next-line
   }, [isPlaying])
-
+  const getBackgroundColor = () => {
+    if (willBeRemoved) {
+      return isMarkedForHitlist ? 'green' : 'red'
+    } else {
+      return isMarkedForHitlist ? 'green' : 'inherit'
+    }
+  }
   return (
     <div
       className={classes.root}
@@ -132,7 +142,11 @@ export function Clip({ index }) {
           width: '100%',
           display: 'flex',
           flexDirection: 'row',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          borderRadius: 5,
+          height: '20%',
+          padding: '8px 8px 0 8px',
+          backgroundColor: getBackgroundColor()
         }}
       >
         <div style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
@@ -140,7 +154,8 @@ export function Clip({ index }) {
         </div>
         <IconButton
           onClick={() => {
-            dispatch(removeClip({ tracksId: tmpTrackId, clipId: id }))
+            // dispatch(removeClip({ tracksId: tmpTrackId, clipId: id }))
+            dispatch(markForHitlist({ tracksId: tmpTrackId, clipId: id }))
           }}
         >
           <CloseIcon style={{ width: 16 }}></CloseIcon>
@@ -152,14 +167,15 @@ export function Clip({ index }) {
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-evenly',
-          overflowX: 'hidden'
+          height: '13%'
         }}
       >
         <IconButton
           onClick={() => {
             handlePlayPause()
           }}
-          aria-label='play'>
+          aria-label='play'
+        >
           {isPlaying ? (
             <PauseIcon style={{ width: 16 }}></PauseIcon>
           ) : (
@@ -169,7 +185,11 @@ export function Clip({ index }) {
         <IconButton
           onClick={() => {
             dispatch(
-              toggleIsLooping({ tracksId: tmpTrackId, clipId: id, isLooping: !isLooping })
+              toggleIsLooping({
+                tracksId: tmpTrackId,
+                clipId: id,
+                isLooping: !isLooping
+              })
             )
           }}
           aria-label='loop'
@@ -199,18 +219,33 @@ export function Clip({ index }) {
           <FastForwardIcon style={{ width: 16 }}></FastForwardIcon>
         </IconButton>
 
-        <IconButton onClick={() => {
-          removeFile(src)
-          dispatch(removeClip({ tracksId: tmpTrackId, clipId: id }))
-        }
-        } aria-label='load-file'>
+        <IconButton
+          onClick={() => {
+            //removeFile(src)
+            dispatch(markForRemoval({ tracksId: tmpTrackId, clipId: id }))
+            // handlePlayPause()
+
+            setPlay(false)
+            dispatch(
+              registerClip({
+                clip: {
+                  tracksId: tmpTrackId,
+                  clipId: id,
+                  isPlaying: false
+                }
+              })
+            )
+          }}
+          aria-label='load-file'
+        >
           <SaveIcon style={{ width: 16 }}></SaveIcon>
         </IconButton>
-        <IconButton onClick={() => {
-          openWith(src)
-
-        }
-        } aria-label='open-in-files'>
+        <IconButton
+          onClick={() => {
+            openWith(src)
+          }}
+          aria-label='open-in-files'
+        >
           <OpenWithIcon style={{ width: 16 }}></OpenWithIcon>
         </IconButton>
       </div>
@@ -235,7 +270,6 @@ export function Clip({ index }) {
           aria-labelledby='range-slider'
         />
       </div>
-
     </div>
   )
 
@@ -267,15 +301,15 @@ export function Clip({ index }) {
     return {
       container: ref,
       audioContext,
-      audioScriptProcessor: null,
-      closeAudioContext: false,
+      // audioScriptProcessor: new AudioWorkletNode(audioContext, 'audioContext'),
+      // closeAudioContext: false,
       barWidth: 2,
       barRadius: 2,
       responsive: true,
       height: 80,
       normalize: true,
       partialRender: true
-      //backend: 'WebAudio',
+      // backend: 'WebAudio'
     }
   }
 
@@ -283,12 +317,18 @@ export function Clip({ index }) {
     const newVolume = +value
 
     if (newVolume) {
-      dispatch(changeClipVolume({ clipId: id, tracksId: tmpTrackId, volume: newVolume }))
+      dispatch(
+        changeClipVolume({
+          clipId: id,
+          tracksId: tmpTrackId,
+          volume: newVolume
+        })
+      )
       wavesurfer.current.setVolume(newVolume || 1)
     }
   }
 }
 
 Clip.propTypes = {
-  index: PropTypes.any,
+  index: PropTypes.any
 }

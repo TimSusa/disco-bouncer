@@ -1,32 +1,35 @@
 // import {isEmpty, isObject} from 'lodash'
 import ipcRenderer from './ipc-runtime.js'
 
-export function addIpcFileListenerOnce (cb) {
+export function addIpcFileListenerOnce(cb) {
   ipcRenderer.once('open-file-dialog-reply', (event) => {
     cb(event)
   })
 }
 
-export function openIpcFileDialog () {
+export function openIpcFileDialog() {
   sendAsyncMsg('open-file-dialog', {})
 }
 
-export function openIpcUnsavedChanges (state) {
+export function openIpcUnsavedChanges(state) {
   sendAsyncMsg('open-unsaved-changes-dialog', state)
 }
 
-export function exitApp () {
+export function exitApp() {
   sendAsyncMsg('exit-app', {})
 }
 
-export function removeFile (path) {
-  sendAsyncMsg('remove-file', {path})
+export function removeFile(path) {
+  sendAsyncMsg('remove-file', { path })
 }
-export function openWith (path) {
-  sendAsyncMsg('open-with', {path})
+export function removeFiles(paths) {
+  sendAsyncMsg('remove-files', { paths })
+}
+export function openWith(path) {
+  sendAsyncMsg('open-with', { path })
 }
 
-export function addIpcSaveFileListenerOnce (cb) {
+export function addIpcSaveFileListenerOnce(cb) {
   ipcRenderer.once('save-file-dialog-reply', (event) => {
     cb(event)
   })
@@ -36,23 +39,23 @@ export function addIpcSaveFileListenerOnce (cb) {
 //   return sendSyncMsgGetResult('open-file-dialog')
 // }
 
-export function saveIpcFileDialog (payload) {
+export function saveIpcFileDialog(payload) {
   sendAsyncMsg('save-file-dialog', payload)
 }
 
-export function sendAppSettings (payload) {
+export function sendAppSettings(payload) {
   sendAsyncMsg('send-app-settings', payload)
 }
-export function setActualWinCoords (payload) {
+export function setActualWinCoords(payload) {
   sendAsyncMsg('set-to-actual-win-coords', payload)
 }
-export function addIpcWindowCoordsListenerOnce (cb) {
+export function addIpcWindowCoordsListenerOnce(cb) {
   ipcRenderer.once('set-to-actual-win-coords-reply', (payload) => {
     cb(payload)
   })
 }
 
-function sendAsyncMsg (msg, payload) {
+function sendAsyncMsg(msg, payload) {
   ipcRenderer.send(msg, payload)
 }
 

@@ -6,9 +6,9 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
+import AddMenu from './AddMenu'
 
 export const MenuAppBar = MenuAppBarCmp
-
 
 function MenuAppBarCmp(props) {
   const theme = useTheme()
@@ -36,6 +36,7 @@ function MenuAppBarCmp(props) {
               justifyContent: 'space-around'
             }}
           >
+            <AddMenu></AddMenu>
           </div>
         </Toolbar>
       </AppBar>

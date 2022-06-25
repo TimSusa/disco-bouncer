@@ -1,6 +1,4 @@
-import { actionsContent, 
-  actionsViewSettings 
-} from '../'
+import { actionsContent, actionsViewSettings } from '../'
 const { toggleIsPlayingList } = actionsContent
 const { clearRegisteredClips } = actionsViewSettings
 

@@ -9,8 +9,7 @@
   "license": "MIT",
   "repository": "https://github.com/TimSusa/disco-bouncer.git",
   "files": [
-    "build/**/*",
-    "node_modules/**/*"
+    "build/**/*"
   ],
   "build": {
     "appId": "com.electron.disco-bouncer",
@@ -73,8 +72,8 @@
     "@material-ui/icons": "latest",
     "@material-ui/styles": "4.11.2",
     "@reduxjs/toolkit": "1.5.0",
-    "electron-is-dev": "1.2.0",
-    "electron-log": "4.3.1",
+    "electron-is-dev": "2.0.0",
+    "electron-log": "4.4.8",
     "electron-window-state": "5.0.3",
     "keycode": "2.2.0",
     "lodash": "4.17.20",
@@ -88,7 +87,7 @@
     "trash": "7.1.0",
     "typeface-roboto": "1.1.13",
     "uuid": "^8.3.1",
-    "wavesurfer.js": "^4.3.0"
+    "wavesurfer.js": "6.2.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
@@ -97,9 +96,9 @@
     "chai-roughly": "1.0.0",
     "concurrently": "5.3.0",
     "cross-env": "^7.0.3",
-    "electron": "11.1.1",
-    "electron-builder": "22.9.1",
-    "electron-publish": "22.9.1",
+    "electron": "19.0.6",
+    "electron-builder": "23.0.2",
+    "electron-publish": "23.0.2",
     "electron-reload": "^1.5.0",
     "enzyme": "3.11.0",
     "eslint": "7.16.0",
@@ -120,11 +119,10 @@
     "wait-for-localhost-cli": "2.0.0"
   },
   "scripts": {
-    "start": "cross-env REACT_APP_IS_WEB_MODE=true react-scripts start",
     "dev": "cross-env REACT_APP_IS_WEB_MODE=false yarn run clean && concurrently \"BROWSER=none react-scripts start\" \"wait-for-localhost 3000 && nodemon --exec \"\"electron ./\"\"\"",
-    "build-ci": "cross-env REACT_APP_IS_WEB_MODE=false yarn clean:dist && react-scripts build && yarn cp-src-electron && yarn build:app-ci",
-    "build:app": "electron-builder -c.extraMetadata.main=build/app/electron.js --mac",
-    "build:app-ci": "electron-builder -c.extraMetadata.main=build/app/electron.js -mwl",
+    "build:ci": "cross-env REACT_APP_IS_WEB_MODE=false yarn clean:dist && react-scripts build && yarn cp-src-electron",
+    "build:app": "yarn build:ci && electron-builder -c.extraMetadata.main=build/app/electron.js --mac",
+    "build:app:all": "yarn build:ci && electron-builder -c.extraMetadata.main=build/app/electron.js -mwl",
     "cp-src-electron": "mkdir build/app && cp -r ./src/app/ build/app",
     "build": "cross-env REACT_APP_IS_WEB_MODE=true react-scripts build",
     "build:doc": "cd disco-bouncer-doc && yarn build && cd ../..",

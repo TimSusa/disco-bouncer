@@ -1,29 +1,20 @@
 import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addElement } from '../../global-state/actions/thunks/thunk-add-element.js'
+import { useDispatch, useSelector } from 'react-redux'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 import AddIcon from '@material-ui/icons/Add'
-import { STRIP_TYPE } from '../../global-state/reducers/slider-list'
 import { Tooltip, IconButton } from '@material-ui/core'
-
-const {
-  BUTTON,
-  BUTTON_CC,
-  BUTTON_PROGRAM_CHANGE,
-  BUTTON_SOUND,
-  SLIDER,
-  SLIDER_HORZ,
-  LABEL,
-  PAGE
-} = STRIP_TYPE
+import { removeFiles } from '../utils/ipc-renderer.js'
+import { actionsContent } from '../global-state'
 
 export default AddMenu
 
 function AddMenu() {
   const dispatch = useDispatch()
+  const { removeMarkedTracks } = actionsContent
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)
+  const { tracksToRemove } = useSelector((state) => state.content)
   return (
     <React.Fragment>
       <Tooltip title='Add Elements'>
@@ -51,22 +42,9 @@ function AddMenu() {
         open={open}
         onClose={handleClose}
       >
-        <MenuItem onClick={handleAddPage}>Add Page</MenuItem>
-        <MenuItem onClick={handleAddSlider}>Add Vertical Slider</MenuItem>
-        <MenuItem onClick={handleAddSliderHorz}>Add Horizontal Slider</MenuItem>
-        <MenuItem onClick={handleAddButton.bind(this, BUTTON)}>
-          Add Button
+        <MenuItem onClick={handleRemoveMarkedTracks}>
+          Remove Marked Tracks
         </MenuItem>
-        <MenuItem onClick={handleAddButton.bind(this, BUTTON_CC)}>
-          Add Button CC
-        </MenuItem>
-        <MenuItem onClick={handleAddButton.bind(this, BUTTON_PROGRAM_CHANGE)}>
-          Add Button Program Change
-        </MenuItem>
-        <MenuItem onClick={handleAddButton.bind(this, BUTTON_SOUND)}>
-          Add Button Sound
-        </MenuItem>
-        <MenuItem onClick={handleAddLabel}>Add Label</MenuItem>
       </Menu>
     </React.Fragment>
   )
@@ -78,27 +56,9 @@ function AddMenu() {
     setAnchorEl(null)
   }
 
-  async function handleAddButton(type) {
-    await dispatch(addElement(type))
-    handleClose()
-  }
-
-  async function handleAddSlider() {
-    await dispatch(addElement(SLIDER))
-    handleClose()
-  }
-  async function handleAddSliderHorz() {
-    await dispatch(addElement(SLIDER_HORZ))
-    handleClose()
-  }
-
-  async function handleAddLabel() {
-    await dispatch(addElement(LABEL))
-    handleClose()
-  }
-
-  async function handleAddPage() {
-    await dispatch(addElement(PAGE))
+  function handleRemoveMarkedTracks() {
+    removeFiles(tracksToRemove)
+    dispatch(removeMarkedTracks({ tracksToRemove }))
     setAnchorEl(null)
   }
 }

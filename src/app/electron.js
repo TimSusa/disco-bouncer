@@ -46,7 +46,7 @@ if (!gotTheLock) {
   app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
-    //if (process.platform !== 'darwin') 
+    //if (process.platform !== 'darwin')
     app.quit()
   })
 
@@ -70,8 +70,8 @@ async function createWindow() {
   const [xSet, ySet, widthSet, heightSet] = []
   const { x, y, width, height } = {
     x: parseInt(xSet || 0, 10),
-    y: parseInt( ySet, 10),
-    width: parseInt( widthSet, 10),
+    y: parseInt(ySet, 10),
+    width: parseInt(widthSet, 10),
     height: parseInt(heightSet, 10)
   }
   // Create the window using the state information
@@ -87,11 +87,10 @@ async function createWindow() {
       webSecurity: true,
       enableRemoteModule: false,
       sandbox: true
-    }
-    ,
-    title: 'Disco Bouncer',
-    vibrancy: 'dark',
-    titlebarAppearsTransparent: true
+    },
+    title: 'Disco Bouncer'
+    // vibrancy: 'dark',
+    // titlebarAppearsTransparent: true
   })
   win.setMenu(null)
 
@@ -111,8 +110,17 @@ async function createWindow() {
 
   // Register IPC
   ipcMain.on('open-file-dialog', onOpenFileDialog)
-  ipcMain.on('open-with', (event, pathToFile) => shell.showItemInFolder(pathToFile.path))
+  ipcMain.on('open-with', (event, pathToFile) =>
+    shell.showItemInFolder(pathToFile.path)
+  )
   ipcMain.on('remove-file', (event, pathToFile) => trash(pathToFile.path))
+  ipcMain.on('remove-files', (event, pathsToFiles) => {
+    pathsToFiles?.paths.forEach((path) => {
+      log.info(path.src)
+      trash(path.src)
+    })
+    return
+  })
   ipcMain.on('set-to-actual-win-coords', onSetActualWinCoords)
   ipcMain.on('exit-app', () => app.exit(0))
 
@@ -128,22 +136,27 @@ async function createWindow() {
 }
 
 function onOpenFileDialog(event) {
-
-  doAsync(() => dialog
-    .showOpenDialog({
-      properties: ['openFile', 'openDirectory']
-    }), (stuff) => {
-    const { filePaths, canceled } = stuff
-    if (canceled) return
-    doAsync(() => loadPaths(filePaths[0]), function (tracks) {
-      const stufff = {
-        content: { tracks },
-        presetName: filePaths[0]
-      }
-      event.sender.send('open-file-dialog-reply', { ...stufff })
-    })
-    return filePaths
-  })
+  doAsync(
+    () =>
+      dialog.showOpenDialog({
+        properties: ['openFile', 'openDirectory']
+      }),
+    (stuff) => {
+      const { filePaths, canceled } = stuff
+      if (canceled) return
+      doAsync(
+        () => loadPaths(filePaths[0]),
+        function (tracks) {
+          const stufff = {
+            content: { tracks },
+            presetName: filePaths[0]
+          }
+          event.sender.send('open-file-dialog-reply', { ...stufff })
+        }
+      )
+      return filePaths
+    }
+  )
 }
 
 function onSetActualWinCoords(event) {
@@ -154,11 +167,20 @@ function onSetActualWinCoords(event) {
 }
 
 async function loadPaths(tmpPath) {
-  return getFilePaths(tmpPath).filter((item) => { return item.endsWith('.wav') || item.endsWith('.flac') || item.endsWith('.mp3') || item.endsWith('.ogg') || item.endsWith('.mp4') })
+  return getFilePaths(tmpPath).filter((item) => {
+    return (
+      item.endsWith('.wav') ||
+      item.endsWith('.flac') ||
+      item.endsWith('.mp3') ||
+      item.endsWith('.ogg') ||
+      item.endsWith('.mp4')
+    )
+  })
 }
 
-
 function doAsync(promise, cb) {
-  const errFunc = (err) => { throw new Error(err) }
+  const errFunc = (err) => {
+    throw new Error(err)
+  }
   return promise().then(cb, errFunc).catch(errFunc)
 }

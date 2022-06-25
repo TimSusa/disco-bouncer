@@ -8,8 +8,6 @@ import Drawer from '@material-ui/core/Drawer'
 import DrawerList from './drawer-list/DrawerList'
 //import { actionsContent } from './global-state'
 import { clock } from './global-state/thunks/clock'
-import { isSafari } from './utils/is-safari'
-import {content} from './utils/example_120bpm'
 
 export function App() {
   const dispatch = useDispatch()
@@ -19,16 +17,7 @@ export function App() {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   /*eslint-disable*/
   useEffect(() => {
-    if (isSafari()) {
-      alert(
-        'Dear User, \n\nSafari and iOS Browsers are not supported. Please, consider using Android or a macOSX, win or raspberryPI hardware.'
-      )
-    }
-    // hackdisable
     dispatch(clock())
-    let me = content
-    //console.log('ASDf ', JSON.stringify(me))
-    //dispatch(setContent({ content: content.content.tracks, viewSettings: content.viewSettings}))
   }, [])
   /*eslint-enable*/
   return (

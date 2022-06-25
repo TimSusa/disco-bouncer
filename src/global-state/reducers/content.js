@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid'
 
-
-
 export const content = {
   setContent(state, { payload: { content } }) {
     state.tracks.length = 0
     state.tracks = []
-    content.forEach((pathOfTrack)=>{
+    state.tracksToRemove = []
+    state.tracksToRemove.length = 0
+    content.forEach((pathOfTrack) => {
       state.tracks.push({
         id: `track-${uuidv4()}`,
         data: [
@@ -18,10 +18,12 @@ export const content = {
             isLooping: true,
             isWaveformShown: true,
             isPlaying: false,
-            audioDriverOutName: null
-          }]})
-       
-        
+            audioDriverOutName: null,
+            isMarkedForHitlist: false,
+            willBeRemoved: false
+          }
+        ]
+      })
     })
   },
   addTrack(state) {
@@ -70,6 +72,21 @@ export const content = {
     if (state.tracks[tracksIdx].data.length === 0) {
       state.tracks.splice(tracksIdx, 1)
     }
+  },
+  markForHitlist(state, { payload: { tracksId, clipId } }) {
+    const tracksIdx = state.tracks.findIndex((item) => item.id === tracksId)
+    const clipIdx = state.tracks[tracksIdx].data.findIndex(
+      (item) => item.id === clipId
+    )
+    state.tracks[tracksIdx].data[clipIdx].isMarkedForHitlist = true
+  },
+  markForRemoval(state, { payload: { tracksId, clipId } }) {
+    const tracksIdx = state.tracks.findIndex((item) => item.id === tracksId)
+    const clipIdx = state.tracks[tracksIdx].data.findIndex(
+      (item) => item.id === clipId
+    )
+    state.tracks[tracksIdx].data[clipIdx].willBeRemoved = true
+    state.tracksToRemove.push(state.tracks[tracksIdx].data[clipIdx])
   },
   changeClipSrc(state, { payload: { tracksId, clipId, src } }) {
     const tracksIdx = state.tracks.findIndex((item) => item.id === tracksId)
@@ -125,9 +142,8 @@ export const content = {
     const clipIdx = state.tracks[tracksIdx].data.findIndex(
       (item) => item.id === clipId
     )
-    state.tracks[tracksIdx].data[
-      clipIdx
-    ].audioDriverOutName = audioDriverOutName
+    state.tracks[tracksIdx].data[clipIdx].audioDriverOutName =
+      audioDriverOutName
   },
   toggleIsWaveformShown(
     state,
@@ -138,6 +154,19 @@ export const content = {
       (item) => item.id === clipId
     )
     state.tracks[tracksIdx].data[clipIdx].isWaveformShown = isWaveformShown
+  },
+  removeMarkedTracks(state, { payload: { tracksToRemove } }) {
+    tracksToRemove.forEach((track) => {
+      const tracksIdx = state.tracks.findIndex(
+        (item) => item.data[0].id === track.id
+      )
+      state.tracks.splice(tracksIdx, 1)
+      // if (state.tracks[idx].data.length === 0) {
+      //   state.tracks.splice(idx, 1)
+      // }
+    })
+    state.tracksToRemove.length = 0
+    //state.tracksToRemove = []
   },
   stopAll(state) {
     state.tracks.forEach((track, idx) => {
