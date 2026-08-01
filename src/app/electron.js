@@ -1,186 +1,294 @@
-const {
-  BrowserWindow,
-  app,
-  //Notification,
-  ipcMain,
-  dialog,
-  shell
-} = require('electron')
-const path = require('path')
-const { getFilePaths } = require('./filewalker')
-const isDev = require('electron-is-dev')
-const windowStateKeeper = require('electron-window-state')
-const log = require('electron-log')
+const path = require("node:path");
+const os = require("node:os");
+const fs = require("node:fs");
 
-const trash = require('trash')
-// eslint-disable-next-line no-unused-expressions
-isDev && require('electron-reload')
-// eslint-disable-next-line no-unused-expressions
-require('electron').process
+// Lazy-load electron after app is ready to avoid module resolution issues
+let BrowserWindow, ipcMain, dialog, shell, app;
 
-let win = null
-
-log.info(app.getPath('userData'))
-const gotTheLock = app.requestSingleInstanceLock()
-
-if (!gotTheLock) {
-  app.quit()
-} else {
-  app.on('second-instance', () => {
-    // Someone tried to run a second instance, we should focus our window.
-    log.info(
-      'Someoned tried to run a second instance, we should focus our window.'
-    )
-    if (win) {
-      if (win.isMinimized()) win.restore()
-      win.focus()
-    }
-  })
-
-  // Create myWindow, load the rest of the app, etc...
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  app.on('ready', createWindow)
-
-  // Quit when all windows are closed.
-  app.on('window-all-closed', function () {
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    //if (process.platform !== 'darwin')
-    app.quit()
-  })
-
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    //if (win === null) createWindow()
-  })
+function getElectron() {
+	if (!app) {
+		const electron = require("electron");
+		BrowserWindow = electron.BrowserWindow;
+		ipcMain = electron.ipcMain;
+		dialog = electron.dialog;
+		shell = electron.shell;
+		app = electron.app;
+	}
+	return { BrowserWindow, ipcMain, dialog, shell, app };
 }
 
-async function createWindow() {
-  // app.allowRendererProcessReuse = false
-  // Extract CLI parameter: Enable Auto Update
-  // Load the previous state with fallback to defaults
-  const mainWindowState = windowStateKeeper({
-    defaultWidth: 1000,
-    defaultHeight: 800
-  })
+// ── Config persistence ──────────────────────────────────────────
+const CONFIG_FILE = "disco-bouncer-config.json";
 
-  // Extract CLI parameter: Window Coordinates
-  const [xSet, ySet, widthSet, heightSet] = []
-  const { x, y, width, height } = {
-    x: parseInt(xSet || 0, 10),
-    y: parseInt(ySet, 10),
-    width: parseInt(widthSet, 10),
-    height: parseInt(heightSet, 10)
-  }
-  // Create the window using the state information
-  win = new BrowserWindow({
-    x,
-    y,
-    width,
-    height,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-      webSecurity: true,
-      enableRemoteModule: false,
-      sandbox: true
-    },
-    title: 'Disco Bouncer'
-    // vibrancy: 'dark',
-    // titlebarAppearsTransparent: true
-  })
-  win.setMenu(null)
+function getConfigPath() {
+	const { app } = getElectron();
+	return path.join(app.getPath("userData"), CONFIG_FILE);
+}
 
-  // Let us register listeners on the window, so we can update the state
-  // automatically (the listeners will be removed when the window is closed)
-  // and restore the maximized or full screen state
-  mainWindowState.manage(win)
+function readConfig() {
+	try {
+		const p = getConfigPath();
+		if (!fs.existsSync(p)) return {};
+		return JSON.parse(fs.readFileSync(p, "utf-8"));
+	} catch {
+		return {};
+	}
+}
 
-  // Check for develper console
-  isDev && win.webContents.openDevTools()
+function writeConfig(config) {
+	try {
+		const p = getConfigPath();
+		const dir = path.dirname(p);
+		if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+		fs.writeFileSync(p, JSON.stringify(config, null, 2));
+	} catch (err) {
+		console.error("Config write failed:", err);
+	}
+}
 
-  win.webContents.session.setPermissionRequestHandler(
-    (webContents, permission, callback) => {
-      callback(true)
-    }
-  )
+function getPersistedFolder() {
+	return readConfig().lastFolder || null;
+}
 
-  // Register IPC
-  ipcMain.on('open-file-dialog', onOpenFileDialog)
-  ipcMain.on('open-with', (event, pathToFile) =>
-    shell.showItemInFolder(pathToFile.path)
-  )
-  ipcMain.on('remove-file', (event, pathToFile) => trash(pathToFile.path))
-  ipcMain.on('remove-files', (event, pathsToFiles) => {
-    pathsToFiles?.paths.forEach((path) => {
-      log.info(path.src)
-      trash(path.src)
-    })
-    return
-  })
-  ipcMain.on('set-to-actual-win-coords', onSetActualWinCoords)
-  ipcMain.on('exit-app', () => app.exit(0))
+function setPersistedFolder(folderPath) {
+	const config = readConfig();
+	config.lastFolder = folderPath;
+	writeConfig(config);
+}
 
-  const url = isDev
-    ? 'http://localhost:3000/'
-    : `file://${path.join(__dirname, '../index.html')}`
+function getDownloadsFolder() {
+	return path.join(os.homedir(), "Downloads");
+}
 
-  win.loadURL(url)
-  //  Emitted when the window is closed.
-  win.on('closed', function () {
-    win = null
-  })
+// ── App lifecycle ───────────────────────────────────────────────
+// When run via `electron .`, require('electron') returns the built-in API.
+// The npm 'electron' package may shadow it (returns path string instead).
+// process.versions.electron is set by Electron's V8 runtime, not by npm.
+if (!process.versions.electron) {
+	throw new Error("This file must be loaded by Electron, not Node.js");
+}
+
+// Try the built-in module first; fall back if npm package shadows it
+let electron;
+try {
+	electron = require("electron");
+	if (typeof electron === "string" || !electron.app) {
+		// npm package shadowed the built-in — use process.electronBinding
+		const bindings = process.electronBinding("electron_main");
+		electron = bindings ? bindings : electron;
+	}
+} catch {
+	throw new Error("Failed to load Electron module");
+}
+
+app = electron.app;
+BrowserWindow = electron.BrowserWindow;
+ipcMain = electron.ipcMain;
+dialog = electron.dialog;
+shell = electron.shell;
+
+const isDev = !app.isPackaged;
+let win = null;
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+	app.quit();
+} else {
+	app.on("second-instance", () => {
+		if (win) {
+			if (win.isMinimized()) win.restore();
+			win.focus();
+		}
+	});
+
+	app.whenReady().then(createWindow);
+
+	app.on("window-all-closed", () => {
+		app.quit();
+	});
+}
+
+// ── Window creation ─────────────────────────────────────────────
+function createWindow() {
+	let windowState = { x: undefined, y: undefined, width: 1000, height: 800 };
+	try {
+		const keeper = require("electron-window-state");
+		windowState = keeper({ defaultWidth: 1000, defaultHeight: 800 });
+	} catch {}
+
+	win = new BrowserWindow({
+		x: windowState.x,
+		y: windowState.y,
+		width: windowState.width,
+		height: windowState.height,
+		webPreferences: {
+			nodeIntegration: false,
+			contextIsolation: true,
+			preload: path.join(__dirname, "preload.js"),
+			webSecurity: true,
+			enableRemoteModule: false,
+			sandbox: false,
+		},
+		title: "Disco Bouncer",
+	});
+
+	win.setMenu(null);
+
+	if (windowState.manage) {
+		try {
+			windowState.manage(win);
+		} catch {}
+	}
+
+	if (isDev) win.webContents.openDevTools();
+
+	registerIpcHandlers();
+
+	const url = isDev
+		? "http://localhost:3000/"
+		: `file://${path.join(__dirname, "index.html")}`;
+
+	win.loadURL(url);
+	win.on("closed", () => {
+		win = null;
+	});
+}
+
+// ── IPC handlers ────────────────────────────────────────────────
+function registerIpcHandlers() {
+	ipcMain.on("open-file-dialog", onOpenFileDialog);
+
+	ipcMain.on("open-with", (_event, data) => {
+		shell.showItemInFolder(data.path);
+	});
+
+	ipcMain.on("remove-file", (_event, data) => {
+		try {
+			fs.rmSync(data.path, { force: true });
+		} catch {}
+	});
+
+	ipcMain.on("remove-files", (_event, data) => {
+		if (data?.paths) {
+			data.paths.forEach((item) => {
+				try {
+					fs.rmSync(item.src, { force: true });
+				} catch {}
+			});
+		}
+	});
+
+	ipcMain.on("exit-app", () => app.exit(0));
+
+	ipcMain.on("set-to-actual-win-coords", (event) => {
+		if (win) {
+			const bounds = win.getBounds();
+			event.sender.send("set-to-actual-win-coords-reply", [
+				bounds.x,
+				bounds.y,
+				bounds.width,
+				bounds.height,
+			]);
+		}
+	});
+
+	// File tree / folder persistence
+	ipcMain.on("get-persisted-folder", (event) => {
+		const folder = getPersistedFolder() || getDownloadsFolder();
+		event.sender.send("get-persisted-folder-reply", folder);
+	});
+
+	ipcMain.on("get-home-folder", (event) => {
+		const home = os.homedir();
+		event.sender.send("get-home-folder-reply", home);
+	});
+
+	ipcMain.on("set-persisted-folder", (event, folderPath) => {
+		setPersistedFolder(folderPath);
+		event.sender.send("set-persisted-folder-reply", { success: true });
+	});
+
+	ipcMain.on("get-file-tree", (event, data) => {
+		try {
+			const { listDirectory } = require("./filewalker-tree");
+			const { dirs, files } = listDirectory(data.folderPath);
+			const node = {
+				id: data.folderPath,
+				name: path.basename(data.folderPath) || data.folderPath,
+				path: data.folderPath,
+				type: "folder",
+				children: [...dirs, ...files],
+			};
+			event.sender.send("get-file-tree-reply", node);
+		} catch (err) {
+			console.error("get-file-tree error:", err);
+			event.sender.send("get-file-tree-reply", null);
+		}
+	});
+
+	ipcMain.on("open-folder-dialog", (event) => {
+		dialog
+			.showOpenDialog({ properties: ["openDirectory"] })
+			.then((result) => {
+				if (result.canceled || result.filePaths.length === 0) {
+					event.sender.send("open-folder-dialog-reply", null);
+					return;
+				}
+				const folderPath = result.filePaths[0];
+				setPersistedFolder(folderPath);
+				try {
+					const { listDirectory } = require("./filewalker-tree");
+					const { dirs, files } = listDirectory(folderPath);
+					const node = {
+						id: folderPath,
+						name: path.basename(folderPath) || folderPath,
+						path: folderPath,
+						type: "folder",
+						children: [...dirs, ...files],
+					};
+					event.sender.send("open-folder-dialog-reply", {
+						folderPath,
+						tree: node,
+					});
+				} catch {
+					event.sender.send("open-folder-dialog-reply", {
+						folderPath,
+						tree: null,
+					});
+				}
+			})
+			.catch((err) => {
+				console.error("open-folder-dialog error:", err);
+				event.sender.send("open-folder-dialog-reply", null);
+			});
+	});
 }
 
 function onOpenFileDialog(event) {
-  doAsync(
-    () =>
-      dialog.showOpenDialog({
-        properties: ['openFile', 'openDirectory']
-      }),
-    (stuff) => {
-      const { filePaths, canceled } = stuff
-      if (canceled) return
-      doAsync(
-        () => loadPaths(filePaths[0]),
-        function (tracks) {
-          const stufff = {
-            content: { tracks },
-            presetName: filePaths[0]
-          }
-          event.sender.send('open-file-dialog-reply', { ...stufff })
-        }
-      )
-      return filePaths
-    }
-  )
-}
+	dialog
+		.showOpenDialog({ properties: ["openFile", "openDirectory"] })
+		.then((result) => {
+			if (result.canceled || result.filePaths.length === 0) return;
+			const selectedPath = result.filePaths[0];
 
-function onSetActualWinCoords(event) {
-  log.info('onSetActualWinCoords ')
-  const { x, y, width, height } = win.getBounds()
-  event.sender.send('set-to-actual-win-coords-reply', [x, y, width, height])
-  return [x, y, width, height]
-}
+			try {
+				if (fs.statSync(selectedPath).isDirectory()) {
+					setPersistedFolder(selectedPath);
+				}
+			} catch {}
 
-async function loadPaths(tmpPath) {
-  return getFilePaths(tmpPath).filter((item) => {
-    return (
-      item.endsWith('.wav') ||
-      item.endsWith('.flac') ||
-      item.endsWith('.mp3') ||
-      item.endsWith('.ogg') ||
-      item.endsWith('.mp4')
-    )
-  })
-}
+			const { getFilePaths } = require("./filewalker");
+			const tracks = getFilePaths(selectedPath).filter((item) =>
+				/\.(wav|flac|mp3|ogg|mp4|aif|aiff|m4a)$/i.test(item),
+			);
 
-function doAsync(promise, cb) {
-  const errFunc = (err) => {
-    throw new Error(err)
-  }
-  return promise().then(cb, errFunc).catch(errFunc)
+			event.sender.send("open-file-dialog-reply", {
+				content: { tracks },
+				presetName: selectedPath,
+			});
+		})
+		.catch((err) => {
+			console.error("open-file-dialog error:", err);
+		});
 }

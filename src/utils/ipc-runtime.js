@@ -1,7 +1,10 @@
-let appRuntime = null
+// Bridges Electron's ipcRenderer via the preload script.
+// In web mode, appRuntime is null and all IPC calls are no-ops.
 
-if (process.env.REACT_APP_IS_WEB_MODE === 'false') {
-  appRuntime = window.appRuntime
+let appRuntime = null;
+
+if (typeof window !== "undefined" && window.appRuntime) {
+	appRuntime = window.appRuntime;
 }
 
-export default appRuntime
+export default appRuntime;

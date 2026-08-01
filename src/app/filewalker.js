@@ -1,16 +1,39 @@
-const fs = require('fs')
-const path = require('path')
+const fs = require("node:fs");
+const path = require("node:path");
 
 /** Retrieve file paths from a given folder and its subfolders. */
 const getFilePaths = (folderPath) => {
-  const entryPaths = fs.readdirSync(folderPath).map(entry => path.join(folderPath, entry))
-  const filePaths = entryPaths.filter(entryPath => fs.statSync(entryPath).isFile())
-  const dirPaths = entryPaths.filter(entryPath => !filePaths.includes(entryPath))
-  const dirFiles = dirPaths.reduce((prev, curr) => prev.concat(getFilePaths(curr)), [])
+	let entryPaths;
+	try {
+		entryPaths = fs
+			.readdirSync(folderPath)
+			.map((entry) => path.join(folderPath, entry));
+	} catch {
+		return [];
+	}
 
+	const filePaths = [];
+	const dirPaths = [];
 
-  return [...filePaths, ...dirFiles]
-}
+	for (const entryPath of entryPaths) {
+		try {
+			const stat = fs.statSync(entryPath);
+			if (stat.isFile()) {
+				filePaths.push(entryPath);
+			} else if (stat.isDirectory()) {
+				dirPaths.push(entryPath);
+			}
+		} catch {
+			// skip inaccessible entries
+		}
+	}
 
-module.exports={getFilePaths}
+	const dirFiles = dirPaths.reduce(
+		(prev, curr) => prev.concat(getFilePaths(curr)),
+		[],
+	);
 
+	return [...filePaths, ...dirFiles];
+};
+
+module.exports = { getFilePaths };
