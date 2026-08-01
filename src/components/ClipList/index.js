@@ -1,1 +1,1 @@
-export { ClipList } from './ClipList'
+export { ClipList } from "./ClipList";

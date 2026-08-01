@@ -1,6 +1,7 @@
-import { createContext } from 'react'
-let AudioContext = window.AudioContext || window.webkitAudioContext
-const audioContext = new AudioContext()
-const context = createContext({ audioContext })
+import { createContext } from "react";
 
-export default context
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioContext = new AudioContext();
+const context = createContext({ audioContext });
+
+export default context;

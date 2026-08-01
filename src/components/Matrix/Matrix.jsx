@@ -1,49 +1,41 @@
-import { Clip } from '../Clip'
-import React, { useEffect } from 'react'
+import Box from "@material-ui/core/Box";
+import ListItem from "@material-ui/core/ListItem";
+import { useEffect } from "react";
 //import { useTheme } from '@material-ui/styles'
 //import { makeStyles } from '@material-ui/styles'
-import { useSelector, useDispatch } from 'react-redux'
-import Box from '@material-ui/core/Box'
-import ListItem from '@material-ui/core/ListItem'
-// import IconButton from '@material-ui/core/IconButton'
-// import AddTrackIcon from '@material-ui/icons/PlaylistAdd'
-import { initDrivers } from '../../store/thunks/drivers'
-import { actionsContent } from '../../store'
-import { FixedSizeList } from 'react-window'
-
+import { useDispatch, useSelector } from "react-redux";
+import { FixedSizeList } from "react-window";
+import { initDrivers } from "../../store/thunks/drivers";
+import { Clip } from "../Clip";
 export function Matrix() {
-  const { setContent, 
-    //addTrack
-  } = actionsContent
-  //const theme = useTheme()
-  const dispatch = useDispatch()
-  //const classes = makeStyles(styles.bind(this, theme))()
-  const tracks = useSelector((state) => state.content.tracks || [])
-  useEffect(() => {
-    dispatch(initDrivers())
-  }, [dispatch])
-  useEffect(() => {
-    //dispatch(setContent({ content: content.content }))
-  }, [setContent, dispatch])
+	const dispatch = useDispatch();
+	const tracks = useSelector((state) => state.content.tracks || []);
 
-  return (
+	useEffect(() => {
+		dispatch(initDrivers());
+	}, [dispatch]);
 
-    <Box
-      sx={{ width: '100%', height: 800, maxWidth: 1024, bgcolor: 'background.paper' }}
-    >
-      <FixedSizeList
-        height={800}
-        // width={800}
-        itemSize={200}
-        itemCount={tracks.length}
-        overscanCount={2}
-        itemData={tracks}
-      >
-        {renderRow}
-      </FixedSizeList>
-    </Box>
-
-  )
+	return (
+		<Box
+			sx={{
+				width: "100%",
+				height: 800,
+				maxWidth: 1024,
+				bgcolor: "background.paper",
+			}}
+		>
+			<FixedSizeList
+				height={800}
+				// width={800}
+				itemSize={200}
+				itemCount={tracks.length}
+				overscanCount={2}
+				itemData={tracks}
+			>
+				{renderRow}
+			</FixedSizeList>
+		</Box>
+	);
 }
 
 // function styles(theme) {
@@ -88,11 +80,11 @@ export function Matrix() {
 // }
 
 function renderRow(props) {
-  const { index, style, data } = props
-  const { id, data: dataTmp} = data[index]
-  return (
-    <ListItem style={style} key={index} component="div">
-      <Clip id={id} data={dataTmp[0]}></Clip>
-    </ListItem>
-  )
+	const { index, style, data } = props;
+	const { id, data: dataTmp } = data[index];
+	return (
+		<ListItem style={style} key={index} component="div">
+			<Clip id={id} data={dataTmp[0]}></Clip>
+		</ListItem>
+	);
 }

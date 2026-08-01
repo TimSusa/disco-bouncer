@@ -1,3 +1,3 @@
-export { Clip } from './Clip'
-export { AudioDriverOutMenu } from './AudioDriverOutMenu'
-export { ButtonLoadAudioFile } from './ButtonLoadAudioFile'
+export { AudioDriverOutMenu } from "./AudioDriverOutMenu";
+export { ButtonLoadAudioFile } from "./ButtonLoadAudioFile";
+export { Clip } from "./Clip";

@@ -1,18 +1,19 @@
-import React from 'react'
+import React from "react";
 
 export const useRaf = (onFrame) => {
-  const requestRef = React.useRef()
-  const startTimeRef = React.useRef()
-  const callback = (time) => {
-    if (!startTimeRef.current) startTimeRef.current = time
-    const progress = time - startTimeRef.current
-    onFrame(progress)
-    requestRef.current = requestAnimationFrame(callback)
-  }
+	const requestRef = React.useRef();
+	const startTimeRef = React.useRef();
+	const onFrameRef = React.useRef(onFrame);
+	onFrameRef.current = onFrame;
 
-  React.useEffect(() => {
-    requestRef.current = requestAnimationFrame(callback)
-    return () => cancelAnimationFrame(requestRef.current)
-    //eslint-disable-next-line
-  }, [])
-}
+	React.useEffect(() => {
+		const callback = (time) => {
+			if (!startTimeRef.current) startTimeRef.current = time;
+			const progress = time - startTimeRef.current;
+			onFrameRef.current(progress);
+			requestRef.current = requestAnimationFrame(callback);
+		};
+		requestRef.current = requestAnimationFrame(callback);
+		return () => cancelAnimationFrame(requestRef.current);
+	}, []);
+};

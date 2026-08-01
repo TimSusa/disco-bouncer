@@ -1,1 +1,1 @@
-export { default } from './MenuAppBarCmp'
+export { default } from "./MenuAppBarCmp";

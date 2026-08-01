@@ -1,43 +1,40 @@
-import React from 'react'
-import Enzyme from 'enzyme'
-import Adapter from 'enzyme-adapter-react-16'
+import { createMount } from "@material-ui/core/test-utils";
+import Enzyme from "enzyme";
+import Adapter from "enzyme-adapter-react-16";
+import configureStore from "redux-mock-store";
+import thunk from "redux-thunk";
+import Footer from "../components/footer/Footer";
+import { mockStore as storeMock } from "../store/reducers/test/mock-store";
+import { ReduxWrappedMuiApp } from "./ReduxWrappedMuiApp";
 
-import { ReduxWrappedMuiApp } from './ReduxWrappedMuiApp'
-import { createMount } from '@material-ui/core/test-utils'
+const middlewares = [thunk];
+const mockStore = configureStore(middlewares);
+const store = mockStore(storeMock);
 
-import configureStore from 'redux-mock-store'
-import { mockStore as storeMock } from '../store/reducers/test/mock-store'
-import thunk from 'redux-thunk'
+Enzyme.configure({ adapter: new Adapter() });
 
-import Footer from '../components/footer/Footer'
-const middlewares = [thunk]
-const mockStore = configureStore(middlewares)
-const store = mockStore(storeMock)
+describe.skip("<ReduxWrappedMuiApp />", () => {
+	let mount;
 
-Enzyme.configure({ adapter: new Adapter() })
+	beforeEach(() => {
+		mount = createMount({ options: { untilSelector: "Footer" } });
+	});
 
-describe.skip('<ReduxWrappedMuiApp />', () => {
-  let mount
+	afterEach(() => {
+		mount.cleanUp();
+	});
 
-  beforeEach(() => {
-    mount = createMount({ options: { untilSelector: 'Footer' } })
-  })
-
-  afterEach(() => {
-    mount.cleanUp()
-  })
-
-  test('should work', () => {
-    const wrapper = mount(
-      <ReduxWrappedMuiApp store={store}>
-        <Footer />
-      </ReduxWrappedMuiApp>
-    )
-    const foundFooterButton = wrapper.find('FooterButton')
-    expect(foundFooterButton).toHaveLength(4)
-    expect(foundFooterButton.at(0).props()).toHaveProperty('item')
-    expect(foundFooterButton.at(1).props()).toHaveProperty('item')
-    expect(foundFooterButton.at(2).props()).toHaveProperty('item')
-    expect(foundFooterButton.at(3).props()).toHaveProperty('item')
-  })
-})
+	test("should work", () => {
+		const wrapper = mount(
+			<ReduxWrappedMuiApp store={store}>
+				<Footer />
+			</ReduxWrappedMuiApp>,
+		);
+		const foundFooterButton = wrapper.find("FooterButton");
+		expect(foundFooterButton).toHaveLength(4);
+		expect(foundFooterButton.at(0).props()).toHaveProperty("item");
+		expect(foundFooterButton.at(1).props()).toHaveProperty("item");
+		expect(foundFooterButton.at(2).props()).toHaveProperty("item");
+		expect(foundFooterButton.at(3).props()).toHaveProperty("item");
+	});
+});

@@ -1,2 +1,1 @@
-export { default } from './FileReader'
-export { default as FileReader } from './FileReader'
+export { default, default as FileReader } from "./FileReader";
