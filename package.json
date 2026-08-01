@@ -94,7 +94,7 @@
     "build:linux": "yarn build:ci && electron-builder --linux",
     "cp-src-electron": "cp -r ./src/app/electron.js ./src/app/preload.js ./src/app/config.js ./src/app/filewalker.js ./src/app/filewalker-tree.js build/",
     "build": "cross-env REACT_APP_IS_WEB_MODE=true react-app-rewired build",
-    "lint": "eslint src/ --ext .js,.jsx",
+    "lint": "biome check src/",
     "clean": "yarn clean:dist",
     "clean:dist": "rimraf dist && rimraf build && mkdir build",
     "postinstall": "electron-builder install-app-deps"
