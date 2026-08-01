@@ -88,7 +88,7 @@ function getParentPath(filePath) {
 	return parts.join("/") || "/";
 }
 
-export function FileTree({ onSelectFile, onSelectFolder }) {
+export function FileTree({ onSelectFile, onSelectFolder, externalTree }) {
 	const classes = useStyles();
 	const _theme = useTheme();
 	const [treeData, setTreeData] = useState(null);
@@ -98,6 +98,16 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 	const [anchorEl, setAnchorEl] = useState(null);
 	const menuOpen = Boolean(anchorEl);
 	const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+
+	// If externalTree is provided (web mode), use it directly
+	useEffect(() => {
+		if (externalTree) {
+			setTreeData(externalTree);
+			setExpandedNodes([externalTree.id]);
+			setCurrentPath(externalTree.name);
+			setLoading(false);
+		}
+	}, [externalTree]);
 
 	// Store home path for fallback
 	const homePathRef = useRef(null);
@@ -143,7 +153,10 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
 	useEffect(() => {
-		loadInitialFolder();
+		// Skip IPC loading if externalTree is provided (web mode)
+		if (!externalTree) {
+			loadInitialFolder();
+		}
 	}, []);
 
 	function loadInitialFolder() {
@@ -414,4 +427,5 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 FileTree.propTypes = {
 	onSelectFile: PropTypes.func,
 	onSelectFolder: PropTypes.func,
+	externalTree: PropTypes.object,
 };
