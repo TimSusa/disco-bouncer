@@ -14,11 +14,9 @@ export function App() {
   const dispatch = useDispatch()
   const theme = useTheme()
   const classes = makeStyles(styles.bind(this, theme))()
-  /*eslint-disable*/
   useEffect(() => {
     dispatch(clock())
-  }, [])
-  /*eslint-enable*/
+  }, [dispatch])
   return (
     <div className={classes.root}>
       <MenuAppBar />

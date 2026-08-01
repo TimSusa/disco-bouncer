@@ -15,7 +15,7 @@ export function ClipList() {
 
   useEffect(() => {
     dispatch(initDrivers())
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
     function updateHeight() {
