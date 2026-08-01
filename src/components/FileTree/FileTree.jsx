@@ -4,6 +4,8 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 import Snackbar from "@material-ui/core/Snackbar";
 import Tooltip from "@material-ui/core/Tooltip";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
@@ -12,7 +14,7 @@ import ExpandMore from "@material-ui/icons/ExpandMore";
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import HomeIcon from "@material-ui/icons/Home";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
+import MenuIcon from "@material-ui/icons/Menu";
 import AudioFileIcon from "@material-ui/icons/MusicNote";
 import { makeStyles, useTheme } from "@material-ui/styles";
 import { PropTypes } from "prop-types";
@@ -20,9 +22,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnectivity } from "../../hooks/useConnectivity";
 import {
 	addIpcFileTreeListenerOnce,
+	addIpcHomeFolderListenerOnce,
 	addIpcPersistedFolderListenerOnce,
 	getFileTree,
+	getHomeFolder,
 	getPersistedFolder,
+	openFolderDialog,
 	setPersistedFolder,
 } from "../../utils/ipc-renderer";
 
@@ -90,7 +95,8 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 	const [expandedNodes, setExpandedNodes] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [currentPath, setCurrentPath] = useState(null);
-	const [menuOpen, setMenuOpen] = useState(false);
+	const [anchorEl, setAnchorEl] = useState(null);
+	const menuOpen = Boolean(anchorEl);
 	const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
 	// Store home path for fallback
@@ -106,14 +112,16 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: loadFolder is stable via ref
 	const handleDisconnect = useCallback(() => {
 		showNotification("⚡ Verbindung verloren - Zeige Home-Ordner");
-
-		// Navigate to home path (persisted folder or Downloads fallback)
 		if (homePathRef.current) {
 			loadFolder(homePathRef.current);
 		} else {
-			// Fallback to user's home directory
-			const homePath = process.env.HOME || process.env.USERPROFILE || "/";
-			loadFolder(homePath);
+			getHomeFolder();
+			addIpcHomeFolderListenerOnce((homePath) => {
+				if (homePath) {
+					homePathRef.current = homePath;
+					loadFolder(homePath);
+				}
+			});
 		}
 	}, [showNotification]);
 
@@ -121,8 +129,6 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 	// biome-ignore lint/correctness/useExhaustiveDependencies: loadFolder is stable via ref
 	const handleReconnect = useCallback(() => {
 		showNotification("✓ Verbindung wiederhergestellt");
-
-		// Try to restore last valid path
 		const pathToRestore = lastValidPathRef.current || homePathRef.current;
 		if (pathToRestore) {
 			loadFolder(pathToRestore);
@@ -149,19 +155,26 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 					homePathRef.current = folderPath;
 					loadFolder(folderPath);
 				} else {
-					// No persisted folder - use home directory
-					const homePath = process.env.HOME || process.env.USERPROFILE || "/";
-					homePathRef.current = homePath;
-					loadFolder(homePath);
+					// No persisted folder — get home dir from main process
+					getHomeFolder();
+					addIpcHomeFolderListenerOnce((homePath) => {
+						if (homePath) {
+							homePathRef.current = homePath;
+							loadFolder(homePath);
+						} else {
+							loadFolder("/");
+						}
+					});
 				}
 			});
 		} catch (e) {
 			console.error("Failed to load initial folder:", e);
 			setLoading(false);
-			// Fallback to home directory on error
-			const homePath = process.env.HOME || process.env.USERPROFILE || "/";
-			homePathRef.current = homePath;
-			loadFolder(homePath);
+			getHomeFolder();
+			addIpcHomeFolderListenerOnce((homePath) => {
+				homePathRef.current = homePath || "/";
+				loadFolder(homePath || "/");
+			});
 		}
 	}
 
@@ -302,44 +315,55 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 
 	return (
 		<div className={classes.treeRoot}>
-			{/* Three dots menu bar with Go Up and Home buttons */}
+			{/* Burger menu bar */}
 			<div className={classes.goUpBar}>
 				<IconButton
 					className={classes.goUpButton}
 					size="small"
-					onClick={() => setMenuOpen(!menuOpen)}
+					onClick={(e) => setAnchorEl(e.currentTarget)}
 				>
-					<MoreVertIcon fontSize="small" />
+					<MenuIcon fontSize="small" />
 				</IconButton>
 
-				{menuOpen && (
-					<>
-						<Tooltip title="Go to parent folder">
-							<IconButton
-								className={classes.goUpButton}
-								size="small"
-								onClick={() => {
-									handleGoUp();
-									setMenuOpen(false);
-								}}
-							>
-								<ArrowUpwardIcon fontSize="small" />
-							</IconButton>
-						</Tooltip>
-						<Tooltip title="Go to home folder">
-							<IconButton
-								className={classes.goUpButton}
-								size="small"
-								onClick={() => {
-									handleGoHome();
-									setMenuOpen(false);
-								}}
-							>
-								<HomeIcon fontSize="small" />
-							</IconButton>
-						</Tooltip>
-					</>
-				)}
+				<Menu
+					anchorEl={anchorEl}
+					open={menuOpen}
+					onClose={() => setAnchorEl(null)}
+				>
+					<MenuItem
+						onClick={() => {
+							openFolderDialog();
+							setAnchorEl(null);
+						}}
+					>
+						<ListItemIcon>
+							<FolderIcon fontSize="small" />
+						</ListItemIcon>
+						<ListItemText primary="Open Folder" />
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							handleGoUp();
+							setAnchorEl(null);
+						}}
+					>
+						<ListItemIcon>
+							<ArrowUpwardIcon fontSize="small" />
+						</ListItemIcon>
+						<ListItemText primary="Parent Folder" />
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							handleGoHome();
+							setAnchorEl(null);
+						}}
+					>
+						<ListItemIcon>
+							<HomeIcon fontSize="small" />
+						</ListItemIcon>
+						<ListItemText primary="Home Folder" />
+					</MenuItem>
+				</Menu>
 
 				{currentPath && (
 					<span className={classes.currentPath} title={currentPath}>

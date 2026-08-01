@@ -30,6 +30,15 @@ export function addIpcFileTreeListenerOnce(cb) {
 	listenOnce("get-file-tree-reply", cb);
 }
 
+// ── Home folder ─────────────────────────────────────────────
+export function getHomeFolder() {
+	send("get-home-folder", {});
+}
+
+export function addIpcHomeFolderListenerOnce(cb) {
+	listenOnce("get-home-folder-reply", cb);
+}
+
 // ── Folder dialog ────────────────────────────────────────────
 export function openFolderDialog() {
 	send("open-folder-dialog", {});

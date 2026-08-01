@@ -61,7 +61,26 @@ function getDownloadsFolder() {
 }
 
 // ── App lifecycle ───────────────────────────────────────────────
-const electron = require("electron");
+// When run via `electron .`, require('electron') returns the built-in API.
+// The npm 'electron' package may shadow it (returns path string instead).
+// process.versions.electron is set by Electron's V8 runtime, not by npm.
+if (!process.versions.electron) {
+	throw new Error("This file must be loaded by Electron, not Node.js");
+}
+
+// Try the built-in module first; fall back if npm package shadows it
+let electron;
+try {
+	electron = require("electron");
+	if (typeof electron === "string" || !electron.app) {
+		// npm package shadowed the built-in — use process.electronBinding
+		const bindings = process.electronBinding("electron_main");
+		electron = bindings ? bindings : electron;
+	}
+} catch {
+	throw new Error("Failed to load Electron module");
+}
+
 app = electron.app;
 BrowserWindow = electron.BrowserWindow;
 ipcMain = electron.ipcMain;
@@ -162,10 +181,27 @@ function registerIpcHandlers() {
 
 	ipcMain.on("exit-app", () => app.exit(0));
 
+	ipcMain.on("set-to-actual-win-coords", (event) => {
+		if (win) {
+			const bounds = win.getBounds();
+			event.sender.send("set-to-actual-win-coords-reply", [
+				bounds.x,
+				bounds.y,
+				bounds.width,
+				bounds.height,
+			]);
+		}
+	});
+
 	// File tree / folder persistence
 	ipcMain.on("get-persisted-folder", (event) => {
 		const folder = getPersistedFolder() || getDownloadsFolder();
 		event.sender.send("get-persisted-folder-reply", folder);
+	});
+
+	ipcMain.on("get-home-folder", (event) => {
+		const home = os.homedir();
+		event.sender.send("get-home-folder-reply", home);
 	});
 
 	ipcMain.on("set-persisted-folder", (event, folderPath) => {

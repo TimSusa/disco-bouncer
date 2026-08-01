@@ -86,7 +86,7 @@
     "wait-for-localhost": "4.1.0"
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && concurrently \"BROWSER=none react-app-rewired start\" \"wait-for-localhost 3000 && electron .\"'",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && yarn cp-src-electron && concurrently \"BROWSER=none react-app-rewired start\" \"wait-for-localhost 3000 && electron .\"'",
     "build:ci": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && react-app-rewired build && yarn cp-src-electron'",
     "build:app": "yarn build:ci && electron-builder --mac",
     "build:app:all": "yarn build:ci && electron-builder -mwl",
