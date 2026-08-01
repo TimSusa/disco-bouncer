@@ -1,5 +1,5 @@
 import React from 'react'
-import FileReader from '../common/FileReader'
+import FileReader from '../FileReader'
 import { PropTypes } from 'prop-types'
 
 ButtonLoadAudioFile.propTypes = {

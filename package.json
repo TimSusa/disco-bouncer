@@ -1,35 +1,31 @@
 {
   "name": "disco-bouncer",
-  "author": "timmsusa@googlemail.com",
-  "description": "disco-bouncer was invented to have the same functionality available like ablton live matrix sequencer",
-  "version": "0.0.17",
-  "main": "./src/app/electron.js",
+  "author": "Tim Susa <timmsusa@googlemail.com>",
+  "description": "disco-bouncer — Ableton Live-style matrix sequencer for sorting and playing audio clips",
+  "version": "0.2.0-alpha.1",
+  "main": "build/electron.js",
   "homepage": "./",
   "private": false,
   "license": "MIT",
   "repository": "https://github.com/TimSusa/disco-bouncer.git",
-  "files": [
-    "build/**/*"
-  ],
   "build": {
-    "appId": "com.electron.disco-bouncer",
+    "appId": "com.disco-bouncer.app",
     "asar": true,
-    "asarUnpack": true,
+    "files": [
+      "build/**/*",
+      "!node_modules/electron",
+      "!node_modules/electron-reload",
+      "!node_modules/.cache"
+    ],
     "releaseInfo": {
       "releaseNotesFile": "./CHANGELOG.md"
     },
-    "win": {
-      "target": "nsis",
-      "icon": "build/icon.ico",
-      "publish": [
-        "github"
-      ]
-    },
     "mac": {
-      "category": "your.app.category.type",
+      "category": "public.app-category.music",
       "icon": "build/icon.icns",
-      "publish": [
-        "github"
+      "target": [
+        "dmg",
+        "zip"
       ],
       "fileAssociations": [
         {
@@ -39,105 +35,69 @@
             "flac",
             "mp4",
             "wav",
-            "aif"
+            "aif",
+            "aiff",
+            "m4a"
           ],
-          "description": "Sort Music Files",
+          "description": "Audio Files",
           "role": "Viewer"
         }
       ]
     },
-    "linux": {
-      "icon": "build/icon.icns",
-      "target": {
-        "target": "appimage",
-        "arch": [
-          "armv7l"
-        ]
-      },
-      "category": "disco-bouncer",
-      "publish": [
-        "github"
-      ]
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
     },
-    "files": [
-      "build/**/*"
-    ],
-    "publish": {
-      "provider": "github",
-      "publishAutoUpdate": true
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Audio"
     }
   },
   "dependencies": {
-    "@material-ui/core": "4.11.2",
-    "@material-ui/icons": "latest",
-    "@material-ui/styles": "4.11.2",
-    "@reduxjs/toolkit": "1.5.0",
-    "electron-is-dev": "2.0.0",
-    "electron-log": "4.4.8",
+    "@material-ui/core": "4.12.4",
+    "@material-ui/icons": "4.11.3",
+    "@material-ui/styles": "4.11.5",
+    "@reduxjs/toolkit": "1.9.7",
     "electron-window-state": "5.0.3",
-    "keycode": "2.2.0",
-    "lodash": "4.17.20",
-    "react": "17.0.1",
-    "react-color": "2.18.1",
-    "react-dom": "17.0.1",
-    "react-redux": "7.2.2",
-    "react-window": "^1.8.6",
-    "redux": "4.0.5",
-    "source-map-explorer": "2.5.1",
-    "trash": "7.1.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-redux": "7.2.9",
+    "react-window": "1.8.10",
+    "redux": "4.2.1",
     "typeface-roboto": "1.1.13",
-    "uuid": "^8.3.1",
-    "wavesurfer.js": "6.2.0"
+    "uuid": "9.0.1",
+    "wavesurfer.js": "6.6.4"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
-    "chai": "4.2.0",
-    "chai-as-promised": "7.1.1",
-    "chai-roughly": "1.0.0",
-    "concurrently": "5.3.0",
-    "cross-env": "^7.0.3",
-    "electron": "19.0.6",
-    "electron-builder": "23.0.2",
-    "electron-publish": "23.0.2",
-    "electron-reload": "^1.5.0",
-    "enzyme": "3.11.0",
-    "eslint": "7.16.0",
-    "eslint-config-prettier": "7.1.0",
-    "eslint-plugin-babel": "5.3.1",
-    "eslint-plugin-prettier": "3.3.0",
-    "eslint-plugin-react": "7.21.5",
-    "eslint-plugin-react-hooks": "4.2.0",
-    "mocha": "8.1.3",
-    "nodemon": "^2.0.6",
-    "react-scripts": "4.0.1",
-    "redux-devtools-extension": "2.13.8",
-    "redux-mock-store": "1.5.3",
-    "rimraf": "3.0.2",
-    "standard-version": "9.0.0",
-    "vercel": "latest",
-    "wait-for-localhost": "3.3.0",
-    "wait-for-localhost-cli": "2.0.0"
+    "concurrently": "9.1.2",
+    "cross-env": "7.0.3",
+    "electron": "33.3.1",
+    "electron-builder": "26.0.12",
+    "eslint-plugin-react": "7.37.3",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "nodemon": "3.1.9",
+    "react-app-rewired": "^2.2.1",
+    "react-scripts": "4.0.3",
+    "rimraf": "5.0.10",
+    "wait-for-localhost": "4.1.0"
   },
   "scripts": {
-    "dev": "cross-env REACT_APP_IS_WEB_MODE=false yarn run clean && concurrently \"BROWSER=none react-scripts start\" \"wait-for-localhost 3000 && nodemon --exec \"\"electron ./\"\"\"",
-    "build:ci": "cross-env REACT_APP_IS_WEB_MODE=false yarn clean:dist && react-scripts build && yarn cp-src-electron",
-    "build:app": "yarn build:ci && electron-builder -c.extraMetadata.main=build/app/electron.js --mac",
-    "build:app:all": "yarn build:ci && electron-builder -c.extraMetadata.main=build/app/electron.js -mwl",
-    "cp-src-electron": "mkdir build/app && cp -r ./src/app/ build/app",
-    "build": "cross-env REACT_APP_IS_WEB_MODE=true react-scripts build",
-    "build:doc": "cd disco-bouncer-doc && yarn build && cd ../..",
-    "lint": "eslint . -c .eslintrc",
-    "test": "yarn lint && yarn test",
-    "analyze": "source-map-explorer build/static/js/main.*",
-    "test-e2e-ci": "concurrently \"BROWSER=none react-scripts start\" \"wait-for-localhost 3000 && CI=true mocha --colors\"",
-    "postinstall": "yarn clean && electron-builder install-app-deps",
+    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && concurrently \"BROWSER=none react-app-rewired start\" \"wait-for-localhost 3000 && electron .\"'",
+    "build:ci": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && react-app-rewired build && yarn cp-src-electron'",
+    "build:app": "yarn build:ci && electron-builder --mac",
+    "build:app:all": "yarn build:ci && electron-builder -mwl",
+    "build:win": "yarn build:ci && electron-builder --win",
+    "build:linux": "yarn build:ci && electron-builder --linux",
+    "cp-src-electron": "cp -r ./src/app/electron.js ./src/app/preload.js ./src/app/config.js ./src/app/filewalker.js ./src/app/filewalker-tree.js build/",
+    "build": "cross-env REACT_APP_IS_WEB_MODE=true react-app-rewired build",
+    "lint": "eslint src/ --ext .js,.jsx",
     "clean": "yarn clean:dist",
     "clean:dist": "rimraf dist && rimraf build && mkdir build",
-    "pre-release-ci": "release prepatch -t $(git describe --abbrev=0) --show-url --overwrite",
-    "release-ci": "git push origin $(git describe --abbrev=0)",
-    "release-me": "standard-version -r $1",
-    "deploy:disco-bouncer-doc": "cd disco-bouncer-doc/ && yarn && yarn deploy && cd ..",
-    "deploy": "vercel"
+    "postinstall": "electron-builder install-app-deps"
   },
   "browserslist": {
     "production": [

@@ -1,65 +1,158 @@
+// Light Theme — Accessibility-first design
+// Matches dark theme interaction patterns for consistency
+// WCAG AA: normal text ≥ 4.5:1, large text ≥ 3:1
+
 export const lightTheme = {
   typography: {
-    useNextVariants: true
+    useNextVariants: true,
   },
   overrides: {
-    // MuiTooltip: {
-    //   tooltip: {
-    //     height: 0
-    //   }
-    // }
+    // Global focus ring for keyboard accessibility
+    MuiButtonBase: {
+      root: {
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '2px',
+        },
+      },
+    },
     MuiButton: {
       contained: {
+        backgroundColor: '#E0E0E0',
+        color: '#212121',
         '&:hover': {
-          backgroundColor: '#ffffff',
-          '@media (hover: none)': {
-            backgroundColor: '#ffffff'
-          }
-        }
-      }
-    },
-    MuiTableCell: {
-      root: {
-        padding: '4px 8px 4px 24px'
-      }
+          backgroundColor: '#D5D5D5',
+        },
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '2px',
+        },
+      },
+      outlined: {
+        borderColor: '#BDBDBD',
+        color: '#424242',
+        '&:hover': {
+          borderColor: '#00897B',
+          backgroundColor: 'rgba(0, 137, 123, 0.08)',
+        },
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '2px',
+        },
+      },
     },
     MuiListItem: {
       root: {
-        justifyContent: 'center'
+        justifyContent: 'center',
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '-2px',
+        },
       },
       gutters: {
         paddingLeft: 2,
-        paddingRight: 2
-      }
+        paddingRight: 2,
+      },
+      button: {
+        '&:hover': {
+          backgroundColor: '#F5F5F5',
+        },
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '-2px',
+        },
+      },
     },
-    MuiIconButton: { root: { padding: 0 } }
+    MuiIconButton: {
+      root: {
+        padding: 0,
+        '&:focus-visible': {
+          outline: '2px solid #00796B',
+          outlineOffset: '2px',
+        },
+      },
+    },
+    MuiTableCell: {
+      root: {
+        padding: '4px 8px 4px 24px',
+      },
+    },
+    MuiDrawer: {
+      paper: {
+        borderRight: '1px solid #E0E0E0',
+      },
+    },
+    MuiAppBar: {
+      colorDefault: {
+        backgroundColor: '#FAFAFA',
+        color: '#212121',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+      },
+    },
+    MuiDivider: {
+      root: {
+        backgroundColor: '#E0E0E0',
+      },
+    },
+    MuiCollapse: {
+      root: {
+        transitionDuration: '200ms',
+      },
+    },
+    MuiTooltip: {
+      tooltip: {
+        backgroundColor: '#424242',
+        color: '#FFFFFF',
+        fontSize: '0.75rem',
+      },
+    },
   },
   palette: {
-    secondary: {
-      light: '#cfcfcf',
-      main: '#707070', // '#8bc34a',
-      dark: '#aeaeae',
-      contrastText: '#616161'
+    type: 'light',
+    background: {
+      default: '#FAFAFA',
+      paper: '#FFFFFF',
+    },
+    text: {
+      primary: '#212121',   // ~16:1 on #FAFAFA
+      secondary: '#616161', // ~5.9:1 on #FAFAFA
+      disabled: '#9E9E9E',  // ~2.8:1 — large text only
     },
     primary: {
-      light: '#cfcfcf',
-      main: '#e0e0e0', // '#8bc34a',
-      dark: '#707070',
-      contrastText: '#455a64'
+      light: '#B2DFDB',
+      main: '#00897B',       // Teal 600 — meets 4.5:1 on white
+      dark: '#00695C',
+      contrastText: '#FFFFFF',
+    },
+    secondary: {
+      light: '#E0E0E0',
+      main: '#757575',
+      dark: '#424242',
+      contrastText: '#FFFFFF',
+    },
+    error: {
+      main: '#D32F2F',
+      contrastText: '#FFFFFF',
     },
     appBar: {
-      background: '#cfcfcf'
+      background: '#FAFAFA',
     },
     slider: {
-      trackActive: '#cfcfcf',
-      trackNonactive: '#cfcfcf',
-      border: '#737373',
-      thump: '#bbbbb7',
-      thumpBorder: '#757575'
+      trackActive: '#00897B',
+      trackNonactive: '#E0E0E0',
+      border: '#BDBDBD',
+      thump: '#757575',
+      thumpBorder: '#00897B',
     },
     button: {
-      background: '#ffffff',
-      fontColor: '#616161'
-    }
-  }
+      background: '#FFFFFF',
+      fontColor: '#424242',
+    },
+    surface: {
+      level1: '#FFFFFF',
+      level2: '#F5F5F5',
+      level3: '#EEEEEE',
+      level4: '#E0E0E0',
+    },
+  },
 }

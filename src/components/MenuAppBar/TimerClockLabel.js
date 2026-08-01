@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
-import { useRaf } from '../utils/useRaf'
-import context from '../global-state/context'
+import { useRaf } from '../../hooks'
+import context from '../../store/context'
 
 export function TimerClockLabel() {
   const { audioContext } = useContext(context)

@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import React, { useEffect, useRef, useState, useContext } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { makeStyles } from '@material-ui/core/styles'
+import { useTheme } from '@material-ui/styles'
 import IconButton from '@material-ui/core/IconButton'
 import PlayIcon from '@material-ui/icons/PlayArrow'
 import NoLoopIcon from '@material-ui/icons/ArrowRightAlt'
@@ -14,27 +15,28 @@ import CloseIcon from '@material-ui/icons/Close'
 import OpenWithIcon from '@material-ui/icons/Search'
 import WaveSurfer from 'wavesurfer.js'
 import Slider from '@material-ui/core/Slider'
-import { actionsContent, actionsViewSettings } from '../global-state'
-import context from '../global-state/context'
+import { actionsContent, actionsViewSettings } from '../../store'
+import context from '../../store/context'
 import {
-  //removeFile,
   openWith
-} from '../utils/ipc-renderer.js'
-//import { playbackStates } from '../global-state/reducers/view-settings'
+} from '../../utils/ipc-renderer.js'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
     width: '100%',
     flexDirection: 'column',
-    border: 'solid 1px #00000035',
+    border: `solid 1px ${theme.palette.type === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
     borderRadius: 5,
     padding: 8,
-    height: 200
+    height: 200,
+    backgroundColor: theme.palette.background.paper
   }
 }))
+
 export function Clip({ index }) {
   const classes = useStyles()
+  const theme = useTheme()
   const { audioContext } = useContext(context)
   const dispatch = useDispatch()
   const { registerClip } = actionsViewSettings
@@ -42,7 +44,6 @@ export function Clip({ index }) {
     changeClipSrc,
     changeClipVolume,
     toggleIsLooping,
-    //removeClip,
     markForRemoval,
     markForHitlist,
     stopAll
@@ -69,6 +70,11 @@ export function Clip({ index }) {
   const [playing, setPlay] = useState(isPlaying)
   const [duration, setDuration] = useState(0)
 
+  // Determine waveform colors based on theme
+  const isDark = theme.palette.type === 'dark'
+  const waveColor = isDark ? '#5C5C5C' : '#BDBDBD'
+  const progressColor = isDark ? '#80CBC4' : '#00897B'
+
   useEffect(() => {
     const options = formWaveSurferOptions(waveformRef.current)
     wavesurfer.current = WaveSurfer.create(options)
@@ -81,7 +87,6 @@ export function Clip({ index }) {
       setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
     })
     wavesurfer.current.on('ready', () => {
-      //dispatch(stopAll())
       setDuration(parseInt(wavesurfer.current.getDuration()) / 60)
     })
     wavesurfer.current.on('finish', () => {
@@ -115,6 +120,7 @@ export function Clip({ index }) {
     }
     //eslint-disable-next-line
   }, [isPlaying])
+
   const getBackgroundColor = () => {
     if (willBeRemoved) {
       return isMarkedForHitlist ? 'green' : 'red'
@@ -122,6 +128,7 @@ export function Clip({ index }) {
       return isMarkedForHitlist ? 'green' : 'inherit'
     }
   }
+
   return (
     <div
       className={classes.root}
@@ -162,9 +169,7 @@ export function Clip({ index }) {
         </div>
         <IconButton
           onClick={() => {
-            // dispatch(removeClip({ tracksId: tmpTrackId, clipId: id }))
             dispatch(markForHitlist({ tracksId: tmpTrackId, clipId: id }))
-
             setPlay(false)
             dispatch(
               registerClip({
@@ -240,10 +245,7 @@ export function Clip({ index }) {
 
         <IconButton
           onClick={() => {
-            //removeFile(src)
             dispatch(markForRemoval({ tracksId: tmpTrackId, clipId: id }))
-            // handlePlayPause()
-
             setPlay(false)
             dispatch(
               registerClip({
@@ -317,19 +319,21 @@ export function Clip({ index }) {
       )
     }
   }
+
   function formWaveSurferOptions(ref) {
     return {
       container: ref,
       audioContext,
-      // audioScriptProcessor: new AudioWorkletNode(audioContext, 'audioContext'),
-      // closeAudioContext: false,
       barWidth: 2,
       barRadius: 2,
       responsive: true,
       height: 80,
       normalize: true,
-      partialRender: true
-      // backend: 'WebAudio'
+      partialRender: true,
+      waveColor: waveColor,
+      progressColor: progressColor,
+      cursorColor: isDark ? '#80CBC4' : '#00897B',
+      cursorWidth: 1
     }
   }
 

@@ -7,7 +7,7 @@ import LoadIcon from '@material-ui/icons/InsertDriveFile'
 import {
   addIpcFileListenerOnce,
   openIpcFileDialog
-} from './../utils/ipc-renderer'
+} from '../../utils/ipc-renderer'
 import { PropTypes } from 'prop-types'
 
 ListItemLoadFileOnWeb.propTypes = {

@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import MenuItem from '@material-ui/core/MenuItem'
 import Menu from '@material-ui/core/Menu'
 import AddIcon from '@material-ui/icons/Add'
+import FolderIcon from '@material-ui/icons/Folder'
 import { Tooltip, IconButton } from '@material-ui/core'
-import { removeFiles } from '../utils/ipc-renderer.js'
-import { actionsContent } from '../global-state'
+import { removeFiles } from '../../utils/ipc-renderer.js'
+import { actionsContent } from '../../store'
 
 export default AddMenu
 
@@ -45,6 +46,10 @@ function AddMenu() {
         <MenuItem onClick={handleRemoveMarkedTracks}>
           Remove Marked Tracks
         </MenuItem>
+        <MenuItem onClick={handleChooseMusicFolder}>
+          <FolderIcon style={{ marginRight: 8 }} />
+          Choose Music Folder
+        </MenuItem>
       </Menu>
     </React.Fragment>
   )
@@ -59,6 +64,13 @@ function AddMenu() {
   function handleRemoveMarkedTracks() {
     removeFiles(tracksToRemove)
     dispatch(removeMarkedTracks({ tracksToRemove }))
+    setAnchorEl(null)
+  }
+
+  function handleChooseMusicFolder() {
+    if (window.appRuntime) {
+      window.appRuntime.send('open-folder-dialog', {})
+    }
     setAnchorEl(null)
   }
 }
