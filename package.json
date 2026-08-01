@@ -75,7 +75,7 @@
   "devDependencies": {
     "concurrently": "9.1.2",
     "cross-env": "7.0.3",
-    "electron": "33.3.1",
+    "electron": "28.3.3",
     "electron-builder": "26.0.12",
     "eslint-plugin-react": "7.37.3",
     "eslint-plugin-react-hooks": "4.6.2",
@@ -86,7 +86,7 @@
     "wait-for-localhost": "4.1.0"
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && yarn cp-src-electron && concurrently \"BROWSER=none react-app-rewired start\" \"wait-for-localhost 3000 && electron .\"'",
+    "dev": "bash dev.sh",
     "build:ci": "cross-env NODE_OPTIONS=--openssl-legacy-provider REACT_APP_IS_WEB_MODE=false sh -c 'yarn clean:dist && react-app-rewired build && yarn cp-src-electron'",
     "build:app": "yarn build:ci && electron-builder --mac",
     "build:app:all": "yarn build:ci && electron-builder -mwl",
