@@ -17,9 +17,10 @@ function DrawerListCmp(props) {
 	const { classes } = props;
 	const [treeKey, setTreeKey] = useState(0);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: stopAll is stable from createSlice
 	useEffect(() => {
 		dispatch(stopAll());
-	}, [dispatch]);
+	}, []);
 
 	// Listen for folder dialog replies from menu bar
 	useEffect(() => {
