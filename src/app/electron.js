@@ -211,9 +211,16 @@ function registerIpcHandlers() {
 
 	ipcMain.on("get-file-tree", (event, data) => {
 		try {
-			const { buildTreeNode } = require("./filewalker-tree");
-			const tree = buildTreeNode(data.folderPath);
-			event.sender.send("get-file-tree-reply", tree);
+			const { listDirectory } = require("./filewalker-tree");
+			const { dirs, files } = listDirectory(data.folderPath);
+			const node = {
+				id: data.folderPath,
+				name: path.basename(data.folderPath) || data.folderPath,
+				path: data.folderPath,
+				type: "folder",
+				children: [...dirs, ...files],
+			};
+			event.sender.send("get-file-tree-reply", node);
 		} catch (err) {
 			console.error("get-file-tree error:", err);
 			event.sender.send("get-file-tree-reply", null);
@@ -231,9 +238,19 @@ function registerIpcHandlers() {
 				const folderPath = result.filePaths[0];
 				setPersistedFolder(folderPath);
 				try {
-					const { buildTreeNode } = require("./filewalker-tree");
-					const tree = buildTreeNode(folderPath);
-					event.sender.send("open-folder-dialog-reply", { folderPath, tree });
+					const { listDirectory } = require("./filewalker-tree");
+					const { dirs, files } = listDirectory(folderPath);
+					const node = {
+						id: folderPath,
+						name: path.basename(folderPath) || folderPath,
+						path: folderPath,
+						type: "folder",
+						children: [...dirs, ...files],
+					};
+					event.sender.send("open-folder-dialog-reply", {
+						folderPath,
+						tree: node,
+					});
 				} catch {
 					event.sender.send("open-folder-dialog-reply", {
 						folderPath,

@@ -19,26 +19,22 @@ function isAudioFile(filePath) {
 }
 
 /**
- * Build a tree node for a directory.
- * Returns null if the directory has no audio files and no subdirectories with audio files.
+ * List immediate children of a directory (one level deep).
+ * Returns { dirs: [...], files: [...] } sorted alphabetically.
+ * Directories are marked with `hasChildren: true` for lazy loading.
+ * Only includes directories that (transitively) contain audio files —
+ * checked by scanning their direct children only (fast heuristic).
  */
-function buildTreeNode(dirPath) {
+function listDirectory(dirPath) {
 	let entries;
 	try {
 		entries = fs.readdirSync(dirPath);
 	} catch {
-		return null;
+		return { dirs: [], files: [] };
 	}
 
-	const node = {
-		id: dirPath,
-		name: path.basename(dirPath) || dirPath,
-		path: dirPath,
-		type: "folder",
-		children: [],
-	};
-
-	let hasAudioDescendant = false;
+	const dirs = [];
+	const files = [];
 
 	for (const entry of entries) {
 		const fullPath = path.join(dirPath, entry);
@@ -50,30 +46,58 @@ function buildTreeNode(dirPath) {
 		}
 
 		if (stat.isDirectory()) {
-			const childNode = buildTreeNode(fullPath);
-			if (childNode) {
-				node.children.push(childNode);
-				hasAudioDescendant = true;
+			// Check if this dir has audio files (one level deep heuristic)
+			const hasAudio = directoryHasAudio(fullPath);
+			if (hasAudio) {
+				dirs.push({
+					id: fullPath,
+					name: entry,
+					path: fullPath,
+					type: "folder",
+					hasChildren: true,
+					children: [], // empty — loaded lazily on expand
+				});
 			}
 		} else if (stat.isFile() && isAudioFile(fullPath)) {
-			node.children.push({
+			files.push({
 				id: fullPath,
 				name: entry,
 				path: fullPath,
 				type: "file",
 				isAudio: true,
 			});
-			hasAudioDescendant = true;
 		}
 	}
 
 	// Sort: folders first, then files, both alphabetically
-	node.children.sort((a, b) => {
-		if (a.type === b.type) return a.name.localeCompare(b.name);
-		return a.type === "folder" ? -1 : 1;
-	});
+	dirs.sort((a, b) => a.name.localeCompare(b.name));
+	files.sort((a, b) => a.name.localeCompare(b.name));
 
-	return hasAudioDescendant ? node : null;
+	return { dirs, files };
 }
 
-module.exports = { buildTreeNode, isAudioFile };
+/**
+ * Quick check: does this directory contain audio files (direct children only)?
+ * This is a heuristic to decide whether to show a directory in the tree.
+ */
+function directoryHasAudio(dirPath) {
+	let entries;
+	try {
+		entries = fs.readdirSync(dirPath);
+	} catch {
+		return false;
+	}
+
+	for (const entry of entries) {
+		const fullPath = path.join(dirPath, entry);
+		try {
+			const stat = fs.statSync(fullPath);
+			if (stat.isFile() && isAudioFile(fullPath)) {
+				return true;
+			}
+		} catch {}
+	}
+	return false;
+}
+
+module.exports = { listDirectory, isAudioFile, directoryHasAudio };
