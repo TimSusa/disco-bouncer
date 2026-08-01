@@ -9,6 +9,7 @@ export const viewSettingsInitState = {
 	windowFrameInSteps: 1,
 	registeredClips: [],
 	audioDriverOuts: [],
+	isChangedTheme: false,
 
 	electronAppSettings: {
 		isDevConsoleEnabled: true,

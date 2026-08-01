@@ -65,7 +65,6 @@ export const lightTheme = {
 		},
 		MuiIconButton: {
 			root: {
-				padding: 0,
 				"&:focus-visible": {
 					outline: "2px solid #00796B",
 					outlineOffset: "2px",

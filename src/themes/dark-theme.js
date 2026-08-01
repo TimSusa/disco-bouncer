@@ -61,7 +61,6 @@ export const darkTheme = {
 		},
 		MuiIconButton: {
 			root: {
-				padding: 0,
 				"&:focus-visible": {
 					outline: "2px solid #64DFDF",
 					outlineOffset: "2px",
