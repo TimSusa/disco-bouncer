@@ -75,7 +75,7 @@
   "devDependencies": {
     "concurrently": "9.1.2",
     "cross-env": "7.0.3",
-    "electron": "28.3.3",
+    "electron": "25.9.8",
     "electron-builder": "26.0.12",
     "eslint-plugin-react": "7.37.3",
     "eslint-plugin-react-hooks": "4.6.2",

@@ -20,6 +20,7 @@ import { makeStyles, useTheme } from "@material-ui/styles";
 import { PropTypes } from "prop-types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useConnectivity } from "../../hooks/useConnectivity";
+import { buildDefaultOsTree } from "../../utils/default-os-tree";
 import {
 	addIpcFileTreeListenerOnce,
 	addIpcHomeFolderListenerOnce,
@@ -147,6 +148,17 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 	}, []);
 
 	function loadInitialFolder() {
+		// Browser mode: show default OS tree immediately
+		if (!window.appRuntime) {
+			const defaultTree = buildDefaultOsTree();
+			setTreeData(defaultTree);
+			setExpandedNodes([defaultTree.id]);
+			setCurrentPath(defaultTree.name);
+			setLoading(false);
+			return;
+		}
+
+		// Electron mode: load via IPC
 		setLoading(true);
 		try {
 			getPersistedFolder();
@@ -155,7 +167,6 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 					homePathRef.current = folderPath;
 					loadFolder(folderPath);
 				} else {
-					// No persisted folder — get home dir from main process
 					getHomeFolder();
 					addIpcHomeFolderListenerOnce((homePath) => {
 						if (homePath) {
@@ -229,7 +240,16 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 			if (onSelectFolder && audioFiles.length > 0) {
 				onSelectFolder(audioFiles);
 			}
-			if (!node.children || node.children.length === 0) {
+			// Browser mode: open file picker for this folder
+			if (
+				!window.appRuntime &&
+				(!node.children || node.children.length === 0)
+			) {
+				openFilePickerForFolder(node);
+				return;
+			}
+			// Electron mode: load tree from main process
+			if (window.appRuntime && (!node.children || node.children.length === 0)) {
 				getFileTree(node.path);
 				addIpcFileTreeListenerOnce((tree) => {
 					if (tree) {
@@ -241,6 +261,82 @@ export function FileTree({ onSelectFile, onSelectFolder }) {
 		} else if (node.type === "file" && node.isAudio) {
 			if (onSelectFile) onSelectFile(node);
 		}
+	}
+
+	function openFilePickerForFolder(_node) {
+		const input = document.createElement("input");
+		input.type = "file";
+		input.webkitdirectory = true;
+		input.directory = true;
+		input.multiple = true;
+		input.onchange = (e) => {
+			const files = Array.from(e.target.files);
+			const audioExt = /\.(wav|flac|mp3|ogg|mp4|aif|aiff|m4a)$/i;
+			const audioFiles = files
+				.filter((f) => audioExt.test(f.name))
+				.map((f) => f.webkitRelativePath || f.name);
+
+			if (audioFiles.length > 0 && onSelectFolder) {
+				onSelectFolder(audioFiles);
+			}
+
+			// Build and merge tree from selected files
+			const folderName = audioFiles[0]?.split("/")[0] || "Selected Folder";
+			const newTree = buildSubTree(folderName, audioFiles);
+			setTreeData((prev) => mergeTree(prev, newTree));
+			setExpandedNodes((prev) => [...prev, newTree.id]);
+		};
+		input.click();
+	}
+
+	function buildSubTree(folderName, relativePaths) {
+		const rootNode = {
+			id: folderName,
+			name: folderName,
+			path: folderName,
+			type: "folder",
+			children: [],
+		};
+		const audioExt = /\.(wav|flac|mp3|ogg|mp4|aif|aiff|m4a)$/i;
+
+		for (const relPath of relativePaths) {
+			const parts = relPath.split("/");
+			let current = rootNode;
+			const startIdx = parts[0] === folderName ? 1 : 0;
+
+			for (let i = startIdx; i < parts.length; i++) {
+				const part = parts[i];
+				const isLast = i === parts.length - 1;
+				const isAudio = isLast && audioExt.test(part);
+				const id = parts.slice(0, i + 1).join("/");
+
+				if (isLast && isAudio) {
+					current.children.push({
+						id,
+						name: part,
+						path: relPath,
+						type: "file",
+						isAudio: true,
+					});
+				} else if (!isLast) {
+					let child = current.children.find(
+						(c) => c.name === part && c.type === "folder",
+					);
+					if (!child) {
+						child = {
+							id,
+							name: part,
+							path: parts.slice(0, i + 1).join("/"),
+							type: "folder",
+							children: [],
+						};
+						current.children.push(child);
+					}
+					current = child;
+				}
+			}
+		}
+		return rootNode;
 	}
 
 	function mergeTree(oldNode, newNode) {
